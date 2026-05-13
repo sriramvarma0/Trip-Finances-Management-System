@@ -1,0 +1,3883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trip Finances</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f8f2;
+      --bg-soft: #eef4ea;
+      --panel: #ffffff;
+      --panel-2: #f4f8f1;
+      --text: #16301f;
+      --muted: #5f7365;
+      --accent: #2f8f4e;
+      --accent-2: #d7a300;
+      --ok: #2f8f4e;
+      --bad: #c94b4b;
+      --border: #d7e2d1;
+      --shadow: 0 16px 35px rgba(18, 45, 28, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease, opacity 180ms ease;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      -webkit-text-size-adjust: 100%;
+      background:
+        radial-gradient(1200px 400px at 90% -10%, rgba(47, 143, 78, 0.08), transparent),
+        radial-gradient(900px 300px at -10% 20%, rgba(215, 163, 0, 0.09), transparent),
+        var(--bg);
+      color: var(--text);
+      font-family: "DM Sans", sans-serif;
+      line-height: 1.45;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .brand {
+      font-weight: 800;
+      letter-spacing: 2px;
+      font-size: 1.3rem;
+      color: var(--accent);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .trip-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 6px 14px rgba(18, 45, 28, 0.04);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+    }
+
+    .btn:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    .category-trigger:focus-visible,
+    .category-option:focus-visible {
+      outline: 3px solid rgba(47, 143, 78, 0.22);
+      outline-offset: 2px;
+    }
+
+    .btn-accent {
+      background: linear-gradient(120deg, #2f8f4e, #51ab6c);
+      color: #ffffff;
+      border-color: #2a7d44;
+      font-weight: 700;
+    }
+
+    .trip-menu {
+      position: absolute;
+      right: 0;
+      top: 48px;
+      min-width: 220px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      z-index: 6;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px);
+    }
+
+    .trip-menu.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .trip-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e6eee0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .trip-item:last-child {
+      border-bottom: none;
+    }
+
+    .trip-item:hover {
+      background: #f2f7ef;
+    }
+
+    .trip-item.current {
+      background: rgba(47, 143, 78, 0.12);
+      color: #215f37;
+    }
+
+    .trip-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      position: relative;
+      margin-bottom: 6px;
+    }
+
+    .kebab-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .trip-detail-menu {
+      position: absolute;
+      right: 0;
+      top: 42px;
+      min-width: 200px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-8px);
+      z-index: 5;
+    }
+
+    .trip-detail-menu.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    .trip-detail-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e6eee0;
+      cursor: pointer;
+    }
+
+    .trip-detail-item:last-child {
+      border-bottom: none;
+    }
+
+    .trip-detail-item:hover {
+      background: #f2f7ef;
+    }
+
+    .trip-switcher {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .trip-caret {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .trip-item.new-trip {
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 12px;
+      padding: clamp(14px, 2vw, 22px);
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: calc(100vh - 76px);
+      padding-right: 4px;
+      padding-bottom: 20px;
+    }
+
+    .card {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 1), rgba(246, 250, 243, 1));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: clamp(12px, 1.8vw, 16px);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-card {
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    .panel-card:last-of-type {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 0;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.02rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .section-note {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .trip-title {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .trip-sub {
+      color: var(--muted);
+      margin: 6px 0;
+      font-size: 0.95rem;
+    }
+
+    .trip-subtitle {
+      font-size: 0.78rem;
+      margin-top: -2px;
+      opacity: 0.82;
+    }
+
+    .trip-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .metric {
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 4px;
+      color: var(--text);
+      font-family: "DM Mono", monospace;
+      font-size: 0.96rem;
+    }
+
+    .members-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 10px 0 12px 0;
+      flex: 1;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .member-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+    }
+
+    .member-row.selected {
+      background: rgba(47, 143, 78, 0.12);
+      border-color: #8cc39c;
+    }
+
+    .member-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+
+    .member-name {
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .member-balance {
+      font-family: "DM Mono", monospace;
+      font-size: 0.84rem;
+    }
+
+    .ok { color: var(--ok); }
+    .bad { color: var(--bad); }
+
+    .form-stack {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .field-label {
+      display: block;
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .field-stack .field-label {
+      margin-bottom: 8px;
+    }
+
+    .field-help {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+
+    .form-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 10px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .radio-option {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.86rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .radio-group input[type="radio"],
+    .radio-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+    }
+
+    .subtle-divider {
+      height: 1px;
+      background: #e6eee0;
+      margin: 6px 0 2px;
+    }
+
+    .btn-danger {
+      border-color: #e3b2b2;
+      color: #a63b3b;
+      background: linear-gradient(180deg, #fff7f7, #fff0f0);
+    }
+
+    .btn-danger:hover {
+      border-color: #cf8a8a;
+      color: #8f2f2f;
+    }
+
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(47, 143, 78, 0.12);
+    }
+
+    .soft-surface {
+      background: #fbfdf8;
+      border: 1px solid #e3ebde;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .inline-form {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-shrink: 0;
+    }
+
+    .control-row {
+      display: grid;
+      gap: 10px;
+    }
+
+    .control-row.two {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .control-row.three {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .field-stack {
+      display: flex;
+      flex-direction: column;
+    }
+
+    input, select, textarea {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 10px 11px;
+      font-family: "DM Sans", sans-serif;
+      width: 100%;
+      min-height: 44px;
+      line-height: 1.25;
+    }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding-right: 38px;
+      background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+      background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 12px) calc(50% - 2px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(47, 143, 78, 0.15);
+    }
+
+    .category-picker {
+      position: relative;
+    }
+
+    .category-trigger {
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 10px 11px;
+      font-family: "DM Sans", sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      text-align: left;
+      min-height: 44px;
+    }
+
+    .category-trigger span:first-child {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .category-trigger:hover {
+      border-color: var(--accent);
+    }
+
+    .category-caret {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1;
+    }
+
+    .category-menu {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: calc(100% + 8px);
+      z-index: 20;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 6px;
+      display: grid;
+      gap: 4px;
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    .category-option {
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 11px;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .category-option:hover,
+    .category-option.active {
+      background: rgba(215, 163, 0, 0.12);
+      border-color: rgba(215, 163, 0, 0.2);
+    }
+
+    .category-custom-wrap {
+      margin-top: 8px;
+      padding: 10px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      background: #fbfdf8;
+    }
+
+    .right-panel {
+      min-width: 0;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 0;
+      flex-wrap: wrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+
+    .tabs::-webkit-scrollbar,
+    .expenses-table-wrap::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .tabs::-webkit-scrollbar-thumb,
+    .expenses-table-wrap::-webkit-scrollbar-thumb {
+      background: rgba(95, 115, 101, 0.28);
+      border-radius: 999px;
+    }
+
+    .tab {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 9px 13px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+    }
+
+    .tab.active {
+      color: #16301f;
+      border-color: #d7a300;
+      background: linear-gradient(120deg, #e8d163, #f4e28a);
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fadeIn 200ms ease;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .expense-form-wrap {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+    }
+
+    .expense-form-wrap.open {
+      max-height: 900px;
+      opacity: 1;
+      margin-bottom: 12px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 6px;
+    }
+
+    .chip {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 0.84rem;
+      user-select: none;
+    }
+
+    .chip.selected {
+      background: rgba(47, 143, 78, 0.12);
+      color: #245f39;
+      border-color: #8cc39c;
+    }
+
+    .expenses-total {
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .expenses-total strong {
+      font-family: "DM Mono", monospace;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .expenses-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #ffffff;
+      box-shadow: var(--shadow);
+    }
+
+    .expenses-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    .expenses-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: linear-gradient(180deg, #f7faf4, #eef4ea);
+      color: var(--text);
+      font-size: 0.84rem;
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .expenses-table tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #edf2e9;
+      vertical-align: top;
+      color: var(--text);
+      font-size: 0.92rem;
+    }
+
+    .expenses-table tbody tr:hover {
+      background: #fbfdf8;
+    }
+
+    .expenses-table tbody tr.transfer-row {
+      background: rgba(215, 163, 0, 0.05);
+    }
+
+    .expense-cell-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .expense-cell-subtle {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
+    .participant-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .participant-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #f7fbf4;
+      color: #40604d;
+      font-size: 0.76rem;
+      white-space: nowrap;
+    }
+
+    .expense-delete-link {
+      border: none;
+      background: transparent;
+      color: #b53d3d;
+      cursor: pointer;
+      font-weight: 700;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .expense-edit-link {
+      border: none;
+      background: transparent;
+      color: #215f37;
+      cursor: pointer;
+      font-weight: 700;
+      padding: 0;
+      margin-right: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    body:not(.edit-mode) .edit-only {
+      display: none !important;
+    }
+
+    .transfer-note {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.35;
+    }
+
+    .date-divider {
+      margin: 16px 0 10px;
+      color: #6b7f70;
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-bottom: 1px dashed rgba(95, 115, 101, 0.3);
+      padding-bottom: 6px;
+    }
+
+    .expense-card {
+      position: relative;
+      margin-bottom: 10px;
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 10px;
+      align-items: start;
+      opacity: 0;
+      animation: cardIn 340ms ease forwards;
+      background: linear-gradient(170deg, rgba(255, 255, 255, 1), rgba(247, 250, 244, 1));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .expense-card,
+    .itinerary-card {
+      min-width: 0;
+    }
+
+    /* Itinerary timeline card styles (match reference look) */
+    #itineraryTimeline {
+      position: relative;
+      padding-left: 20px;
+    }
+
+    #itineraryTimeline::before {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent-2));
+    }
+
+    .itinerary-day {
+      margin-bottom: 20px;
+    }
+
+    .itinerary-day-header {
+      display:flex;align-items:center;gap:10px;margin-bottom:12px;
+    }
+
+    .itinerary-day-header .dot {
+      width:12px;height:12px;border-radius:50%;background:var(--accent);border:3px solid var(--bg);box-shadow:0 0 0 2px var(--accent);
+    }
+
+    .itinerary-card {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      gap: 12px;
+      align-items: start;
+      background: linear-gradient(170deg, rgba(255,255,255,1), rgba(247,250,244,1));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+      position: relative;
+      margin-left: 0;
+    }
+
+    .itinerary-card::before {
+      content: '';
+      position: absolute;
+      left: -24px;
+      top: 14px;
+      width: 12px;
+      height: 12px;
+      background: var(--panel);
+      border: 3px solid var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .itinerary-icon {
+      width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;background:#eaf4e7;border:1px solid #cfe0c8;color:var(--accent);
+    }
+
+    .itinerary-main {
+      display:flex;flex-direction:column;gap:6px;
+    }
+
+    .itinerary-head {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      width:100%;
+    }
+
+    .itinerary-title {
+      margin:0;font-weight:800;font-size:1.02rem;letter-spacing:0.6px;text-transform:uppercase;color:var(--text);
+      flex:1 1 auto;
+      min-width:0;
+      padding-right: 6px;
+    }
+
+    .itinerary-meta {
+      color:var(--muted);font-size:0.9rem;margin-top:0;line-height:1.25;
+    }
+
+    .itinerary-extra {
+      color:var(--muted);font-size:0.9rem;margin-top:4px;
+    }
+
+    .itinerary-participants { display:flex;flex-wrap:wrap;gap:8px;margin-top:8px; }
+    .participant-chip { display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;background:#f7fbf4;border:1px solid var(--border);color:#40604d;font-size:0.78rem; }
+    .participant-avatar { width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:0.68rem; }
+
+    .itinerary-actions { display:flex;flex-direction:row;align-items:flex-start;justify-content:flex-end;gap:8px;min-width:96px;flex-wrap:wrap; }
+
+
+    .cat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      background: #eaf4e7;
+      border: 1px solid #cfe0c8;
+    }
+
+    .transfer-badge {
+      font-size: 0.65rem;
+      letter-spacing: 0.8px;
+      font-weight: 700;
+      color: #906c00;
+      border: 1px solid #d7c06b;
+      background: rgba(215, 163, 0, 0.12);
+      border-radius: 999px;
+      padding: 4px 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .expense-title {
+      margin: 0;
+      font-size: 1.02rem;
+      font-weight: 700;
+    }
+
+    .expense-meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 4px;
+      margin-bottom: 7px;
+    }
+
+    .participants {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .pill {
+      background: #f4f8f1;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.74rem;
+      color: #40604d;
+      padding: 4px 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    }
+
+    .amount-big {
+      font-family: "DM Mono", monospace;
+      font-size: 1.1rem;
+      text-align: right;
+      font-weight: 500;
+    }
+
+    .per-head {
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-top: 8px;
+    }
+
+    .expense-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      min-width: 96px;
+    }
+
+    .expense-actions .edit-btn,
+    .expense-actions .delete-btn {
+      min-width: 72px;
+      min-height: 40px;
+    }
+
+    .delete-btn {
+      border: 1px solid #e0a0a0;
+      background: #fff0f0;
+      color: #b53d3d;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      opacity: 0;
+      pointer-events: none;
+      cursor: pointer;
+      transform: translateY(4px);
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .edit-btn {
+      border: 1px solid #b8d3c1;
+      background: #eef7f1;
+      color: #215f37;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      opacity: 0;
+      pointer-events: none;
+      cursor: pointer;
+      transform: translateY(4px);
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .edit-form {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px dashed var(--border);
+      background: #fbfdf8;
+      display: grid;
+      grid-template-columns: minmax(240px, 0.95fr) minmax(420px, 2.05fr);
+      gap: 12px;
+      align-items: start;
+      grid-column: 1 / -1;
+      width: 100%;
+    }
+
+    .edit-summary {
+      padding: 6px;
+      border-radius: 10px;
+      border: 1px solid #e3ebde;
+      background: #f8fbf5;
+    }
+
+    .edit-summary-title {
+      margin: 0 0 6px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .edit-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(110px, 1fr));
+      gap: 8px;
+    }
+
+    .edit-summary-item {
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #e9f0e6;
+      background: #ffffff;
+    }
+
+    .edit-summary-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+    }
+
+    .edit-summary-value {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.15;
+      word-break: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .edit-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: start;
+      grid-column: 2 / 3;
+    }
+
+    .edit-summary {
+      grid-column: 1 / 2;
+    }
+
+    .edit-actions {
+      grid-column: 2 / 3;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 860px) {
+      .edit-form {
+        grid-template-columns: 1fr;
+      }
+      .edit-fields {
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr;
+      }
+      .edit-summary {
+        grid-column: 1 / -1;
+      }
+      .edit-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+      }
+    }
+
+    .edit-field input,
+    .edit-field select,
+    .edit-field textarea {
+      min-height: 52px;
+      width: 100%;
+      font-size: 1rem;
+      padding: 10px 12px;
+    }
+
+    .edit-field input[type="number"]::-webkit-outer-spin-button,
+    .edit-field input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .edit-field input[type="number"] {
+      appearance: textfield;
+      -moz-appearance: textfield;
+    }
+
+    .edit-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .expense-card:hover .delete-btn,
+    .expense-card:hover .edit-btn,
+    .expense-card:focus-within .delete-btn,
+    .expense-card:focus-within .edit-btn {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 720px) {
+      .delete-btn,
+      .edit-btn {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+
+      .expense-actions {
+        width: 100%;
+        min-width: 0;
+        flex-direction: row;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .expense-actions .edit-btn,
+      .expense-actions .delete-btn {
+        min-width: 0;
+        flex: 1 1 120px;
+        min-height: 44px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 0.84rem;
+      }
+
+      .expense-edit-link,
+      .expense-delete-link {
+        min-height: 44px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 0.92rem;
+      }
+
+      .expense-edit-link {
+        background: #eef7f1;
+        border: 1px solid #b8d3c1;
+        color: #215f37;
+      }
+
+      .expense-delete-link {
+        background: #fff0f0;
+        border: 1px solid #e0a0a0;
+        color: #b53d3d;
+      }
+
+      .itinerary-actions {
+        width: 100%;
+      }
+
+      .itinerary-actions .btn {
+        width: 100%;
+      }
+    }
+
+    .settle-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 11px;
+      background: #f7fbf4;
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .settle-flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      color: var(--text);
+    }
+
+    .settle-name {
+      font-weight: 600;
+      overflow-wrap: anywhere;
+    }
+
+    .settle-arrow {
+      opacity: 0.65;
+      font-weight: 700;
+    }
+
+    .settle-amount {
+      margin-left: auto;
+      text-align: right;
+      font-family: "DM Mono", monospace;
+      font-size: 0.95rem;
+      overflow-wrap: anywhere;
+    }
+
+    .settle-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .settle-actions .btn {
+      white-space: nowrap;
+    }
+
+    .done {
+      opacity: 0.45;
+      text-decoration: line-through;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 160px 1fr 130px;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 9px;
+    }
+
+    .bar-track {
+      height: 12px;
+      border-radius: 999px;
+      background: #ebf2e6;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      background: linear-gradient(90deg, #2f8f4e, #7bc67b);
+      min-width: 3px;
+    }
+
+    .mono {
+      font-family: "DM Mono", monospace;
+    }
+
+    .toast-wrap {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: white;
+      min-width: 220px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      animation: toastIn 250ms ease;
+    }
+
+    .toast.ok { background: #2f8f4e; }
+    .toast.err { background: #c94b4b; }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(245, 248, 242, 0.62);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 95;
+      backdrop-filter: blur(2px);
+    }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 4px solid rgba(47, 143, 78, 0.18);
+      border-top-color: var(--accent);
+      animation: spin 760ms linear infinite;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(245, 248, 242, 0.7);
+      z-index: 98;
+    }
+
+    .modal.open { display: flex; }
+
+    .modal-card {
+      width: min(420px, 92vw);
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-title {
+      margin: 0 0 10px;
+      font-size: 1.06rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 14px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      text-align: center;
+      background: #fbfdf8;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .left-panel {
+        position: static;
+        max-height: none;
+        height: auto;
+      }
+
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .bar-row {
+        grid-template-columns: 120px 1fr 110px;
+      }
+
+      .trip-menu {
+        right: 0;
+      }
+
+      .expenses-table {
+        min-width: 760px;
+      }
+
+      /* prevent left-panel cards from stretching and overlapping content on narrow screens */
+      .panel-card:last-of-type {
+        flex: initial !important;
+        display: block !important;
+        margin-bottom: 12px !important;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .header {
+        padding: 12px 14px;
+      }
+
+      .header-actions {
+        justify-content: flex-end;
+      }
+
+      .tabs {
+        width: 100%;
+        margin: 0;
+        padding-bottom: 2px;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      .tabs::-webkit-scrollbar {
+        display: none;
+      }
+
+      .tab {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+
+      .layout {
+        gap: 10px;
+        padding: 12px;
+      }
+
+      .left-panel {
+        gap: 12px;
+      }
+
+      .card {
+        border-radius: 14px;
+      }
+
+      .trip-card-header,
+      .section-head,
+      .settle-row,
+      .bar-row {
+        align-items: flex-start;
+      }
+
+      .trip-actions,
+      .form-actions,
+      .inline-form,
+      .modal-actions,
+      .edit-actions {
+        width: 100%;
+      }
+
+      .trip-actions,
+      .form-actions,
+      .modal-actions,
+      .edit-actions {
+        justify-content: stretch;
+      }
+
+      .trip-actions .btn,
+      .form-actions .btn,
+      .modal-actions .btn,
+      .edit-actions .btn,
+      .inline-form .btn,
+      .header-actions .btn {
+        min-height: 44px;
+      }
+
+      .trip-actions .btn,
+      .form-actions .btn,
+      .modal-actions .btn,
+      .edit-actions .btn {
+        flex: 1 1 100%;
+      }
+
+      .settle-row {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+      }
+
+      .settle-actions {
+        justify-content: flex-start;
+      }
+
+      .settle-amount {
+        margin-left: 0;
+        text-align: left;
+      }
+
+      .bar-row {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .bar-row > :last-child {
+        text-align: left;
+      }
+
+      .expense-card,
+      .itinerary-card {
+        grid-template-columns: 44px 1fr auto;
+        gap: 10px;
+      }
+
+      .expense-card::before,
+      .itinerary-card::before {
+        left: -20px;
+        top: 18px;
+      }
+
+      .expense-actions,
+      .itinerary-actions {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        min-width: 84px;
+        width: auto;
+        gap: 6px;
+      }
+
+      .itinerary-head {
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .itinerary-title {
+        font-size: 0.98rem;
+        line-height: 1.25;
+        padding-right: 0;
+      }
+
+      .itinerary-main {
+        gap: 5px;
+      }
+
+      .itinerary-actions .btn {
+        width: 100%;
+        min-height: 40px;
+        padding: 8px 10px;
+      }
+
+      .itinerary-meta,
+      .itinerary-extra {
+        font-size: 0.84rem;
+      }
+
+      .itinerary-participants {
+        gap: 6px;
+      }
+
+      .participant-chip {
+        padding: 5px 8px;
+      }
+
+      .amount-big {
+        text-align: left;
+      }
+
+      .expense-form-wrap.open {
+        max-height: 1200px;
+      }
+
+      .edit-summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .edit-fields,
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      #itineraryTimeline {
+        padding-left: 16px;
+      }
+
+      #itineraryTimeline::before {
+        left: 4px;
+      }
+
+      .itinerary-day-header .dot {
+        width: 10px;
+        height: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toast-wrap" id="toastWrap"></div>
+  <div class="loading" id="loading"><div class="spinner"></div></div>
+
+  <div class="modal" id="newTripModal">
+    <div class="modal-card">
+      <h3 class="modal-title">Create New Trip</h3>
+      <input id="newTripName" placeholder="Trip name" />
+      <div style="height:8px"></div>
+      <input id="newTripDestination" placeholder="Destination" />
+      <div class="modal-actions">
+        <button class="btn" id="cancelNewTrip">Cancel</button>
+        <button class="btn btn-accent" id="saveNewTrip">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="header">
+    <div class="header-top">
+      <div class="brand">Trip Finances</div>
+      <div class="header-actions">
+        <button class="btn" id="editModeBtn">Edit</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab" data-tab="itinerary">Itinerary</button>
+      <button class="tab active" data-tab="expenses">Transactions</button>
+      <button class="tab" data-tab="summary">Expenses</button>
+      <button class="tab" data-tab="settle">Settle Up</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="left-panel">
+      <section class="card panel-card" id="tripInfoCard">
+        <div class="trip-card-header">
+          <button class="btn trip-switcher trip-title" id="tripSwitcherBtn">Current Trip</button>
+          <div class="trip-menu" id="tripMenu"></div>
+          <button class="kebab-btn edit-only" id="tripDetailMenuBtn" aria-label="Trip options">⋯</button>
+          <div class="trip-detail-menu" id="tripDetailMenu">
+            <div class="trip-detail-item edit-only" id="editDestinationBtn">Edit Destination</div>
+            <div class="trip-detail-item edit-only" id="deleteTripBtn">Delete Trip</div>
+            <div class="trip-detail-item edit-only" id="newTripBtn">New Trip</div>
+          </div>
+        </div>
+        <p class="trip-sub" id="tripDestinationDisplay">Destination: -</p>
+        <p class="trip-sub trip-subtitle" id="tripCreatedDisplay">Created: -</p>
+        <div class="trip-metrics">
+          <div class="metric">Total Spent<strong id="metricSpent">Rs 0.00</strong></div>
+          <div class="metric">Members<strong id="metricMembers">0</strong></div>
+        </div>
+      </section>
+
+      <section class="card panel-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; position: relative;">
+          <h3 class="section-title">Members</h3>
+          <button class="kebab-btn edit-only" id="membersMenuBtn" aria-label="Members options">⋯</button>
+          <div class="trip-detail-menu" id="membersMenu" style="right: 0; top: 42px;">
+            <div class="trip-detail-item edit-only" id="deleteMemberBtn">Delete Member</div>
+          </div>
+        </div>
+        <div class="members-list" id="membersList"></div>
+        <div class="inline-form edit-only" style="display:none;">
+          <input id="memberInput" placeholder="Add member (e.g. SR)" aria-label="Add member" />
+          <button class="btn btn-accent" id="addMemberBtn">Add</button>
+        </div>
+      </section>
+    </aside>
+
+    <section class="right-panel">
+      <section class="tab-panel" id="panel-itinerary">
+        <div class="card panel-card edit-only" id="addItineraryCard">
+          <div class="section-head">
+            <h3 class="section-title">Add Itinerary</h3>
+            <button class="btn btn-accent icon-btn" id="toggleItineraryFormBtn">+</button>
+          </div>
+
+          <p class="section-note">Add itinerary events for the trip schedule.</p>
+
+          <div class="expense-form-wrap" id="itineraryFormWrap">
+            <form id="itineraryForm" class="form-stack">
+              <div class="grid-3">
+                <div class="field-stack">
+                  <label class="field-label">Title</label>
+                  <input id="itTitle" placeholder="Event title (e.g. Flight to Munnar)" />
+                </div>
+                <div class="field-stack">
+                  <label class="field-label">Type</label>
+                  <select id="itType">
+                    <option value="travel">Travel</option>
+                    <option value="stay">Stay</option>
+                    <option value="explore">Explore</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <div id="itTypeCustomWrap" style="display:none;margin-top:8px;">
+                    <input id="itTypeCustom" placeholder="Custom type" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field-stack">
+                  <label class="field-label">Place / Location</label>
+                  <input id="itPlace" placeholder="e.g. Munnar, Hotel Taj, Backwaters" />
+                </div>
+                <div class="field-stack">
+                  <label class="field-label">End Place <span style="font-size:0.9rem;color:var(--muted);">(Opt.)</span></label>
+                  <input id="itEndPlace" placeholder="e.g. Kochi, Airport, Resort" />
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="field-stack">
+                  <label class="field-label">Start Date / Time</label>
+                  <input id="itDate" type="datetime-local" />
+                </div>
+                <div class="field-stack">
+                  <label class="field-label">End Date / Time <span style="font-size:0.9rem;color:var(--muted);">(Opt.)</span></label>
+                  <input id="itEndDate" type="datetime-local" />
+                </div>
+              </div>
+
+              <div class="field-stack">
+                <label class="field-label">Participants</label>
+                <div id="itParticipants" class="chips"></div>
+              </div>
+
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-accent" type="submit">Add Event</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="section-head" style="margin-bottom:5px;">
+          <h3 class="section-title">Itinerary</h3>
+        </div>
+
+        <div class="card panel-card" id="itineraryTimelineCard">
+          <div class="section-head">
+            <h3 class="section-title">Events Timeline</h3>
+          </div>
+          <div id="itineraryTimeline"></div>
+        </div>
+      </section>
+
+      <section class="tab-panel active" id="panel-expenses">
+        <div class="card panel-card edit-only" id="addTransactionCard">
+          <div class="section-head">
+            <h3 class="section-title">Add Transaction</h3>
+            <button class="btn btn-accent icon-btn" id="toggleFormBtn">+</button>
+          </div>
+          <p class="section-note">Log expenses or person-to-person payments in one ledger so balances stay accurate.</p>
+
+          <div class="expense-form-wrap" id="expenseFormWrap">
+            <form id="expenseForm" class="form-stack">
+              <div class="grid-3">
+                <div class="field-stack">
+                  <select id="payerInput" aria-label="Paid by"></select>
+                </div>
+                <div class="field-stack">
+                  <select id="receiverInput" aria-label="Received by"></select>
+                  <div class="radio-group" id="txKindGroup">
+                    <label class="radio-option">
+                      <input type="checkbox" id="expenseToggle" />
+                      Expense transaction
+                    </label>
+                  </div>
+                  <div id="participantWrap" style="display:none;margin-top:8px;">
+                    <div class="field-help">Select participants for this expense.</div>
+                    <div class="chips" id="participantsChips"></div>
+                  </div>
+                </div>
+                <div class="field-stack">
+                  <input id="amountInput" type="number" step="0.01" min="0" placeholder="Amount" aria-label="Amount in rupees" required />
+                </div>
+              </div>
+              <div class="grid-3">
+                <div class="field-stack" id="titleField">
+                  <label class="field-label">Expense Title</label>
+                  <input id="descInput" placeholder="Expense title, e.g. Flight tickets" aria-label="Expense title" />
+                </div>
+                <div class="field-stack" id="categoryField">
+                  <label class="field-label">Category</label>
+                  <select id="categoryInput" aria-label="Expense category"></select>
+                  <div class="category-custom-wrap" id="categoryCustomWrap" style="display:none;margin-top:8px;">
+                    <input id="categoryCustomInput" placeholder="Custom category" aria-label="Custom category" />
+                  </div>
+                </div>
+                <div class="field-stack" id="dateField">
+                  <label class="field-label">Date / Time</label>
+                  <input id="dateInput" type="datetime-local" aria-label="Date and time" />
+                </div>
+              </div>
+              <div class="field-stack" id="expenseReferenceWrap" style="display:none;">
+                <label class="field-label">Reference Expense</label>
+                <select id="expenseReferenceInput" aria-label="Reference expense"></select>
+                <div class="field-help">Reference only. This does not affect calculations.</div>
+                <div class="field-stack" id="settlementNoteWrap" style="display:none;margin-top:8px;">
+                  <input id="settlementNoteInput" placeholder="Settlement note (optional)" aria-label="Settlement note" />
+                </div>
+              </div>
+              <button class="btn btn-accent" type="submit">Add Transaction</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="section-head" style="margin-bottom:5px;">
+          <h3 class="section-title">Transactions</h3>
+          <button class="btn" id="toggleLedgerViewBtn">▦ Table</button>
+        </div>
+        <div id="expensesList"></div>
+      </section>
+
+      <section class="tab-panel" id="panel-settle">
+        <div class="card panel-card">
+          <h3 class="section-title">Balance Summary</h3>
+          <div id="balanceCards"></div>
+        </div>
+        <div class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <h3 class="section-title">Minimum transfers to settle</h3>
+            <button class="btn edit-only" id="applyAllSettlementsBtn">Apply All</button>
+          </div>
+          <div id="settlementList"></div>
+        </div>
+        <div class="card panel-card">
+          <h3 class="section-title">Per Transaction Settlement</h3>
+          <div id="transactionSettlementList"></div>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="panel-summary">
+        <div class="card panel-card">
+          <h3 class="section-title">Expenses Table</h3>
+          <div id="summaryExpensesTable"></div>
+        </div>
+        <div class="card panel-card">
+          <h3 class="section-title">Spending by Category</h3>
+          <div id="categoryBars"></div>
+        </div>
+        <div class="card panel-card">
+          <h3 class="section-title">Spending by Person</h3>
+          <div id="personBars"></div>
+        </div>
+        <div class="card">
+          <h3 class="section-title">Trip Stats</h3>
+          <div id="statsGrid" class="trip-metrics"></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      trips: [],
+      currentTripId: null,
+      currentTrip: null,
+      activeTab: 'expenses',
+      formOpen: false,
+      settle: { balances: {}, settlements: [] },
+      doneSettlements: new Set(),
+      selectedParticipants: new Set(),
+      selectedCategory: 'other',
+      lastTxKind: 'transfer',
+      editingTransactionId: null,
+      ledgerView: 'table',
+      selectedMemberName: null,
+      editEnabled: false,
+      itinerary: [],
+      itinerarySelectedParticipants: new Set(),
+      itineraryEditingId: null,
+      itineraryFormOpen: false
+    };
+
+    const expenseCategories = [
+      { value: 'flight', label: 'Flight' },
+      { value: 'train', label: 'Train' },
+      { value: 'hotel', label: 'Hotel' },
+      { value: 'food', label: 'Food' },
+      { value: 'cab', label: 'Cab' },
+      { value: 'other', label: 'Other' },
+      { value: 'custom', label: 'Custom' }
+    ];
+
+    const categoryConfig = {
+      flight: { icon: '✈', color: '#4fa8ff' },
+      train: { icon: '🚂', color: '#6ecb9f' },
+      hotel: { icon: '🏨', color: '#d38cff' },
+      food: { icon: '🍽', color: '#ff8a65' },
+      cab: { icon: '🚕', color: '#ffd54f' },
+      other: { icon: '📦', color: '#9fb0d0' }
+    };
+
+    const loadingEl = document.getElementById('loading');
+    const toastWrap = document.getElementById('toastWrap');
+
+    function showLoading(show) {
+      loadingEl.style.display = show ? 'flex' : 'none';
+    }
+
+    function showToast(text, ok = true) {
+      const el = document.createElement('div');
+      el.className = `toast ${ok ? 'ok' : 'err'}`;
+      el.textContent = text;
+      toastWrap.appendChild(el);
+      setTimeout(() => {
+        el.style.opacity = '0';
+        setTimeout(() => el.remove(), 220);
+      }, 2000);
+    }
+
+    function getCategoryLabel(value) {
+      const match = expenseCategories.find(item => item.value === value);
+      return match ? match.label : 'Select expense category';
+    }
+
+    function renderCategorySelect() {
+      const sel = document.getElementById('categoryInput');
+      const customWrap = document.getElementById('categoryCustomWrap');
+      const customInput = document.getElementById('categoryCustomInput');
+      if (!sel) return;
+      sel.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Select category';
+      placeholder.disabled = true;
+      placeholder.selected = true;
+      sel.appendChild(placeholder);
+
+      for (const item of expenseCategories) {
+        const option = document.createElement('option');
+        option.value = item.value;
+        option.textContent = item.label;
+        sel.appendChild(option);
+      }
+
+      sel.value = state.selectedCategory || 'other';
+      if (customWrap) customWrap.style.display = sel.value === 'custom' ? 'block' : 'none';
+
+      sel.onchange = () => {
+        state.selectedCategory = sel.value;
+        if (customWrap) customWrap.style.display = sel.value === 'custom' ? 'block' : 'none';
+        if (sel.value !== 'custom' && customInput) customInput.value = '';
+      };
+    }
+
+    async function api(url, options = {}) {
+      showLoading(true);
+      try {
+        const res = await fetch(url, {
+          headers: { 'Content-Type': 'application/json' },
+          ...options
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || 'Request failed');
+        }
+        return data;
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function initials(name) {
+      if (!name) return '?';
+      return name.trim().split(/\s+/).map(x => x[0]).join('').slice(0, 2).toUpperCase();
+    }
+
+    function colorFromName(name) {
+      const shades = ['#5f6cf9', '#00a2d9', '#d06af7', '#f08c2d', '#36b37e', '#b95f7a', '#8f7df3'];
+      let sum = 0;
+      for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i);
+      return shades[sum % shades.length];
+    }
+
+    function rs(amount) {
+      const num = Number(amount || 0);
+      return `Rs ${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function verifyPIN() {
+      const pin = prompt('Enter PIN to proceed:');
+      if (pin === null) return false;
+      if (pin !== '1819') {
+        showToast('Incorrect PIN', false);
+        return false;
+      }
+      return true;
+    }
+
+    function verifyEditPIN() {
+      const pin = prompt('Enter edit PIN to enable editing:');
+      if (pin === null) return false;
+      if (pin !== '0001') {
+        showToast('Incorrect edit PIN', false);
+        return false;
+      }
+      return true;
+    }
+
+    function parseBeneficiaries(raw) {
+      if (Array.isArray(raw)) return raw;
+      try {
+        return JSON.parse(raw || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function dayLabel(d) {
+      if (!d) return 'No Date';
+      const normalized = String(d).replace(' ', 'T');
+      const t = new Date(normalized);
+      if (Number.isNaN(t.getTime())) return d;
+      const hasTime = /[T\s]\d{2}:\d{2}/.test(String(d));
+      if (hasTime) {
+        return t.toLocaleString('en-IN', {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        });
+      }
+      return t.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function toDateTimeLocalValue(value) {
+      if (!value) return '';
+      const normalized = String(value).replace(' ', 'T');
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(normalized)) return normalized;
+      if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(normalized)) return normalized.slice(0, 16);
+      return '';
+    }
+
+    function scrollToExpenseCard(txId) {
+      const card = document.querySelector(`[data-tx-id="${txId}"]`);
+      if (!card) return;
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    async function init() {
+      bindEvents();
+      await loadTrips();
+      renderAll();
+    }
+
+    async function loadTrips() {
+      const data = await api('/api/trips');
+      state.trips = data.trips || [];
+
+      const savedTripId = localStorage.getItem('lastTripId');
+      const savedTrip = savedTripId && state.trips.find(t => t.id === savedTripId);
+      const current = savedTrip || state.trips.find(t => Number(t.is_current) === 1);
+      state.currentTripId = current ? current.id : (state.trips[0] ? state.trips[0].id : null);
+
+      if (state.currentTripId) {
+        localStorage.setItem('lastTripId', state.currentTripId);
+      }
+
+      if (state.currentTripId) {
+        await loadCurrentTrip();
+      } else {
+        state.currentTrip = null;
+        state.settle = { balances: {}, settlements: [] };
+      }
+    }
+
+    async function loadCurrentTrip() {
+      if (!state.currentTripId) return;
+      const tripData = await api(`/api/trips/${state.currentTripId}`);
+      state.currentTrip = tripData;
+      const settleData = await api(`/api/trips/${state.currentTripId}/settle`);
+      state.settle = settleData;
+      state.doneSettlements = new Set();
+
+      // Do NOT pre-select all members by default. User should explicitly choose
+      // which members participate in each expense via the chips.
+      state.selectedParticipants = new Set();
+      // load itinerary for current trip from the server, with localStorage fallback
+      await loadItineraryForTrip(state.currentTripId);
+    }
+
+    async function loadItineraryForTrip(tripId) {
+      try {
+        const data = await api(`/api/trips/${tripId}/itinerary`);
+        state.itinerary = Array.isArray(data.itinerary) ? data.itinerary : [];
+      } catch (e) {
+        try {
+          const raw = localStorage.getItem(`itinerary:${tripId}`) || '[]';
+          state.itinerary = JSON.parse(raw);
+        } catch (localErr) {
+          state.itinerary = [];
+        }
+      }
+    }
+
+    async function saveItineraryForTrip(tripId) {
+      try {
+        const payload = state.itinerary || [];
+        await api(`/api/trips/${tripId}/itinerary`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+        localStorage.setItem(`itinerary:${tripId}`, JSON.stringify(payload));
+      } catch (e) {
+        console.error('Failed saving itinerary', e);
+        try {
+          localStorage.setItem(`itinerary:${tripId}`, JSON.stringify(state.itinerary || []));
+        } catch (localErr) {
+          console.error('Failed saving itinerary locally', localErr);
+        }
+      }
+    }
+
+    function renderAll() {
+      renderHeader();
+      renderTripInfo();
+      renderMembers();
+      renderItinerary();
+      renderExpenseFormOptions();
+      renderExpenses();
+      renderSettle();
+      renderSummary();
+      renderTabs();
+    }
+
+    function renderHeader() {
+      const btn = document.getElementById('tripSwitcherBtn');
+      const current = state.trips.find(t => t.id === state.currentTripId);
+      btn.innerHTML = `${current ? current.name : 'Select Trip'} <span class="trip-caret">▼</span>`;
+
+      const menu = document.getElementById('tripMenu');
+      menu.innerHTML = '';
+      for (const trip of state.trips) {
+        const row = document.createElement('div');
+        row.className = `trip-item ${trip.id === state.currentTripId ? 'current' : ''}`;
+        row.innerHTML = `<span>${trip.name}</span><span style="color:var(--muted);">${trip.destination || '-'}</span>`;
+        row.onclick = async () => {
+          menu.classList.remove('open');
+          if (trip.id === state.currentTripId) return;
+          await api(`/api/trips/${trip.id}/set-current`, { method: 'PUT' });
+          state.currentTripId = trip.id;
+          localStorage.setItem('lastTripId', trip.id);
+          await loadTrips();
+          renderAll();
+          showToast('Switched trip');
+        };
+        menu.appendChild(row);
+      }
+
+      const newRow = document.createElement('div');
+      newRow.className = 'trip-item new-trip';
+      newRow.innerHTML = '<span>+ New Trip</span><span style="color:var(--muted);">Create</span>';
+      newRow.onclick = () => {
+        menu.classList.remove('open');
+        if (!state.editEnabled) return showToast('Enable edit mode to create a new trip', false);
+        document.getElementById('newTripModal').classList.add('open');
+      };
+      menu.appendChild(newRow);
+    }
+
+    function renderTripInfo() {
+      const destEl = document.getElementById('tripDestinationDisplay');
+      const createdEl = document.getElementById('tripCreatedDisplay');
+      const spentEl = document.getElementById('metricSpent');
+      const membersEl = document.getElementById('metricMembers');
+
+      if (!state.currentTrip) {
+        destEl.textContent = 'Destination: -';
+        createdEl.textContent = 'Created: -';
+        spentEl.textContent = rs(0);
+        membersEl.textContent = '0';
+        return;
+      }
+
+      const trip = state.currentTrip.trip;
+      const txs = state.currentTrip.transactions || [];
+      const spend = txs.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0);
+
+      destEl.textContent = `Destination: ${trip.destination || '-'}`;
+      createdEl.textContent = `Created: ${trip.created || '-'}`;
+      spentEl.textContent = rs(spend);
+      membersEl.textContent = String((state.currentTrip.members || []).length);
+    }
+
+    function renderMembers() {
+      const list = document.getElementById('membersList');
+      list.innerHTML = '';
+
+      if (!state.currentTrip) {
+        list.innerHTML = '<div class="empty">No members yet</div>';
+        return;
+      }
+
+      const members = state.currentTrip.members || [];
+
+      if (!members.length) {
+        // Show only the add member row if no members yet
+        const addRow = document.createElement('div');
+        addRow.className = 'edit-only';
+        addRow.style.cssText = 'display: flex; gap: 8px; align-items: center;';
+        
+        const memberInput = document.createElement('input');
+        memberInput.type = 'text';
+        memberInput.placeholder = 'Add member';
+        memberInput.style.cssText = 'flex: 1; min-height: 44px;';
+        memberInput.className = 'member-add-input';
+        
+        const addBtn = document.createElement('button');
+        addBtn.className = 'btn btn-accent';
+        addBtn.textContent = 'Add';
+        addBtn.style.cssText = 'flex: 0 0 auto; padding: 10px 14px; font-size: 0.85rem;';
+        
+        addBtn.onclick = async () => {
+          if (!state.editEnabled) return showToast('Enable edit mode to add members', false);
+          const name = memberInput.value.trim();
+          if (!name) return showToast('Enter member name', false);
+          try {
+            await api(`/api/trips/${state.currentTripId}/members`, {
+              method: 'POST',
+              body: JSON.stringify({ name })
+            });
+            await loadCurrentTrip();
+            renderAll();
+            showToast('Member added');
+          } catch (err) {
+            showToast(err.message, false);
+          }
+        };
+        
+        memberInput.onkeypress = (e) => {
+          if (e.key === 'Enter') addBtn.click();
+        };
+        
+        addRow.appendChild(memberInput);
+        addRow.appendChild(addBtn);
+        
+        list.appendChild(addRow);
+        return;
+      }
+
+      for (const m of members) {
+        const bal = Number(state.settle.balances[m.name] || 0);
+        const row = document.createElement('div');
+        row.className = `member-row ${state.selectedMemberName === m.name ? 'selected' : ''}`;
+
+        const color = colorFromName(m.name);
+        row.innerHTML = `
+          <div class="member-left">
+            <div class="avatar" data-name="${m.name}" style="background:${color};">${initials(m.name)}</div>
+            <div class="member-name">${m.name}</div>
+          </div>
+          <div class="member-balance ${bal >= 0 ? 'ok' : 'bad'}">${bal >= 0 ? '+' : ''}${rs(bal)}</div>
+        `;
+
+        row.onclick = () => {
+          state.selectedMemberName = m.name;
+          renderMembers();
+        };
+
+        list.appendChild(row);
+      }
+
+      // Add the "Add Member" row at the end
+      const addRow = document.createElement('div');
+      addRow.className = 'edit-only';
+      addRow.style.cssText = 'display: flex; gap: 8px; align-items: center; margin-top: 10px;';
+      
+      const memberInput = document.createElement('input');
+      memberInput.type = 'text';
+      memberInput.placeholder = 'Add member';
+      memberInput.style.cssText = 'flex: 1; min-height: 44px;';
+      memberInput.className = 'member-add-input';
+      
+      const addBtn = document.createElement('button');
+      addBtn.className = 'btn btn-accent';
+      addBtn.textContent = 'Add';
+      addBtn.style.cssText = 'flex: 0 0 auto; padding: 10px 14px; font-size: 0.85rem;';
+      
+      addBtn.onclick = async () => {
+        if (!state.editEnabled) return showToast('Enable edit mode to add members', false);
+        const name = memberInput.value.trim();
+        if (!name) return showToast('Enter member name', false);
+        try {
+          await api(`/api/trips/${state.currentTripId}/members`, {
+            method: 'POST',
+            body: JSON.stringify({ name })
+          });
+          await loadCurrentTrip();
+          renderAll();
+          showToast('Member added');
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      };
+      
+      memberInput.onkeypress = (e) => {
+        if (e.key === 'Enter') addBtn.click();
+      };
+      
+      addRow.appendChild(memberInput);
+      addRow.appendChild(addBtn);
+      
+      list.appendChild(addRow);
+    }
+
+    function renderItinerary() {
+      const timelineEl = document.getElementById('itineraryTimeline');
+      timelineEl.innerHTML = '';
+
+      if (!state.currentTrip) {
+        timelineEl.innerHTML = '<div class="empty">No trip selected</div>';
+        return;
+      }
+
+      const items = state.itinerary || [];
+      if (!items.length) {
+        timelineEl.innerHTML = '<div class="empty">No itinerary events yet</div>';
+        return;
+      }
+
+      // group by date
+      const grouped = {};
+      for (const it of items) {
+        const d = new Date(it.datetime || it.date || '');
+        const key = isNaN(d.getTime()) ? 'No Date' : d.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' });
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(it);
+      }
+
+      const sortedDates = Object.keys(grouped).sort((a, b) => new Date(a) - new Date(b));
+      for (const dateKey of sortedDates) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'itinerary-day';
+
+        const dateHeader = document.createElement('div');
+        dateHeader.className = 'itinerary-day-header';
+        dateHeader.innerHTML = `<div class="dot"></div><div style="font-weight:700;color:var(--accent);">${dateKey}</div>`;
+        dayEl.appendChild(dateHeader);
+
+        const list = grouped[dateKey].sort((a, b) => {
+          const ta = new Date(a.datetime || a.date || 0).getTime() || 0;
+          const tb = new Date(b.datetime || b.date || 0).getTime() || 0;
+          return ta - tb;
+        });
+
+        for (const it of list) {
+          const t = new Date(it.datetime || it.date || '');
+          const timeStr = isNaN(t.getTime()) ? '' : t.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+          const endT = it.endDatetime ? new Date(it.endDatetime) : null;
+          const endTimeStr = endT && !isNaN(endT.getTime()) ? endT.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' }) : '';
+          const timeRangeStr = timeStr && endTimeStr ? `${timeStr} - ${endTimeStr}` : timeStr || '';
+          const placeStr = it.place && it.endPlace ? `${it.place} → ${it.endPlace}` : (it.place || '');
+          const participants = it.participants || [];
+
+          const iconMap = { travel: '✈', stay: '🏨', explore: '📍', other: '📅' };
+          const icon = iconMap[it.type] || iconMap.other;
+
+          const participantsHtml = participants.length
+            ? participants.map(n => `<span class="participant-chip"><span class="participant-avatar" style="background:${colorFromName(n)}">${initials(n)}</span>${n}</span>`).join('')
+            : '';
+
+          const card = document.createElement('article');
+          card.className = 'itinerary-card';
+          card.innerHTML = `
+            <div>
+              <div class="itinerary-icon">${icon}</div>
+            </div>
+            <div class="itinerary-main">
+              <div class="itinerary-head">
+                <h4 class="itinerary-title">${(it.title || '-')}</h4>
+                <div class="itinerary-actions edit-only">
+                  <button class="btn edit-it" data-id="${it.id}">Edit</button><button class="btn btn-danger delete-it" data-id="${it.id}">Delete</button>
+                </div>
+              </div>
+              <div class="itinerary-meta">${timeRangeStr}${placeStr ? ` · ${placeStr}` : ''}</div>
+              <div class="itinerary-extra"><strong>Type:</strong> ${(it.type || '-').toUpperCase()}</div>
+              <div class="itinerary-participants">${participantsHtml}</div>
+            </div>
+          `;
+          card.dataset.timelineCard = 'true';
+
+          dayEl.appendChild(card);
+        }
+
+        timelineEl.appendChild(dayEl);
+      }
+    }
+
+    function renderItineraryForm() {
+      const wrap = document.getElementById('itineraryFormWrap');
+      const chips = document.getElementById('itParticipants');
+      const typeSel = document.getElementById('itType');
+      const typeCustomWrap = document.getElementById('itTypeCustomWrap');
+      if (!wrap || !chips || !typeSel) return;
+      chips.innerHTML = '';
+      const members = state.currentTrip?.members || [];
+      if (!members.length) {
+        chips.innerHTML = '<div class="itinerary-participants-empty">Add trip members to select itinerary participants.</div>';
+      }
+      for (const m of members) {
+        const chip = document.createElement('div');
+        chip.className = `chip ${state.itinerarySelectedParticipants.has(m.name) ? 'selected' : ''}`;
+        chip.textContent = m.name;
+        chip.onclick = () => {
+          if (!state.editEnabled) return showToast('Enable edit mode to modify selections', false);
+          if (state.itinerarySelectedParticipants.has(m.name)) {
+            state.itinerarySelectedParticipants.delete(m.name);
+          } else {
+            state.itinerarySelectedParticipants.add(m.name);
+          }
+          renderItineraryForm();
+        };
+        chips.appendChild(chip);
+      }
+
+      typeSel.onchange = () => {
+        typeCustomWrap.style.display = typeSel.value === 'other' ? 'block' : 'none';
+      };
+    }
+
+    function renderExpenseFormOptions() {
+      const payerSel = document.getElementById('payerInput');
+      const receiverSel = document.getElementById('receiverInput');
+      const chips = document.getElementById('participantsChips');
+      const participantWrap = document.getElementById('participantWrap');
+      const categoryField = document.getElementById('categoryField');
+      const titleField = document.getElementById('titleField');
+      const dateField = document.getElementById('dateField');
+      const expenseReferenceWrap = document.getElementById('expenseReferenceWrap');
+      const expenseReferenceSel = document.getElementById('expenseReferenceInput');
+      const settlementNoteWrap = document.getElementById('settlementNoteWrap');
+      const settlementNoteInput = document.getElementById('settlementNoteInput');
+      const expenseToggle = document.getElementById('expenseToggle');
+      if (!payerSel || !receiverSel || !chips || !participantWrap || !categoryField || !titleField || !dateField || !expenseReferenceWrap || !expenseReferenceSel || !settlementNoteWrap || !settlementNoteInput || !expenseToggle) return;
+
+      const members = state.currentTrip?.members || [];
+
+      const getTxKind = () => (expenseToggle.checked ? 'expense' : 'transfer');
+
+      const updateVisibility = () => {
+        const isExpense = getTxKind() === 'expense';
+        participantWrap.style.display = isExpense ? 'block' : 'none';
+        categoryField.style.display = isExpense ? 'block' : 'none';
+        titleField.style.display = isExpense ? 'block' : 'none';
+        dateField.style.display = 'block';
+        receiverSel.style.display = isExpense ? 'none' : 'block';
+        expenseReferenceWrap.style.display = isExpense ? 'none' : 'block';
+        if (isExpense && state.lastTxKind !== 'expense') {
+          state.selectedParticipants = new Set();
+        }
+        if (!isExpense) {
+          state.selectedParticipants = new Set();
+        }
+        state.lastTxKind = isExpense ? 'expense' : 'transfer';
+      };
+
+      updateVisibility();
+
+      const previousPayer = payerSel.value;
+      payerSel.innerHTML = '';
+      chips.innerHTML = '';
+
+      const payerPlaceholder = document.createElement('option');
+      payerPlaceholder.value = '';
+      payerPlaceholder.textContent = 'Paid by';
+      payerPlaceholder.disabled = true;
+      payerPlaceholder.selected = true;
+      payerSel.appendChild(payerPlaceholder);
+
+      for (const m of members) {
+        const option = document.createElement('option');
+        option.value = m.name;
+        option.textContent = m.name;
+        payerSel.appendChild(option);
+
+        const chip = document.createElement('div');
+        chip.className = `chip ${state.selectedParticipants.has(m.name) ? 'selected' : ''}`;
+        chip.textContent = m.name;
+        chip.onclick = () => {
+          if (!state.editEnabled) return showToast('Enable edit mode to modify selections', false);
+          if (state.selectedParticipants.has(m.name)) {
+            state.selectedParticipants.delete(m.name);
+          } else {
+            state.selectedParticipants.add(m.name);
+          }
+          renderExpenseFormOptions();
+        };
+        chips.appendChild(chip);
+      }
+
+      payerSel.value = previousPayer && members.some(m => m.name === previousPayer) ? previousPayer : '';
+
+      const updateReceiverOptions = () => {
+        const current = receiverSel.value;
+        receiverSel.innerHTML = '';
+        const receiverPlaceholder = document.createElement('option');
+        receiverPlaceholder.value = '';
+        receiverPlaceholder.textContent = 'Received by';
+        receiverPlaceholder.disabled = true;
+        receiverPlaceholder.selected = true;
+        receiverSel.appendChild(receiverPlaceholder);
+
+        for (const m of members) {
+          const option = document.createElement('option');
+          option.value = m.name;
+          option.textContent = m.name;
+          receiverSel.appendChild(option);
+        }
+
+        receiverSel.value = members.some(m => m.name === current)
+          ? current
+          : '';
+      };
+
+      updateReceiverOptions();
+
+      expenseReferenceSel.innerHTML = '';
+      const refPlaceholder = document.createElement('option');
+      refPlaceholder.value = '';
+      refPlaceholder.textContent = 'Select expense to reference';
+      refPlaceholder.disabled = true;
+      refPlaceholder.selected = true;
+      expenseReferenceSel.appendChild(refPlaceholder);
+
+      const settlementOption = document.createElement('option');
+      settlementOption.value = 'settlement';
+      settlementOption.textContent = 'Settlement Transfer';
+      expenseReferenceSel.appendChild(settlementOption);
+
+      const expenseOptions = (state.currentTrip?.transactions || []).filter(t => (t.type || 'expense') === 'expense');
+      for (const tx of expenseOptions) {
+        const option = document.createElement('option');
+        option.value = tx.id;
+        option.textContent = `${tx.desc} · ${rs(tx.amount)}`;
+        expenseReferenceSel.appendChild(option);
+      }
+
+      expenseReferenceSel.onchange = () => {
+        if (expenseReferenceSel.value === 'settlement') {
+          settlementNoteWrap.style.display = 'block';
+        } else {
+          settlementNoteWrap.style.display = 'none';
+          settlementNoteInput.value = '';
+        }
+      };
+
+      expenseToggle.onchange = () => {
+        updateVisibility();
+        renderExpenseFormOptions();
+      };
+
+      payerSel.onchange = () => {
+        updateReceiverOptions();
+      };
+
+    }
+
+    function appendTransactionEditForm(card, tx) {
+      const members = state.currentTrip?.members || [];
+      const participants = new Set(parseBeneficiaries(tx.participants));
+      let currentPayer = tx.payer;
+      let currentReceiver = tx.receiver || '';
+      let currentType = tx.type || 'expense';
+      const currentParticipants = [...participants];
+
+      const form = document.createElement('form');
+      form.className = 'edit-form';
+      form.innerHTML = `
+        <div class="edit-summary">
+          <div class="edit-summary-title">Read-only transaction details</div>
+          <div class="edit-summary-grid">
+            <div class="edit-summary-item">
+              <span class="edit-summary-label">Type</span>
+              <span class="edit-summary-value" data-role="summary-type"></span>
+            </div>
+            <div class="edit-summary-item">
+              <span class="edit-summary-label">Paid By</span>
+              <span class="edit-summary-value" data-role="summary-payer"></span>
+            </div>
+            <div class="edit-summary-item">
+              <span class="edit-summary-label">Received By</span>
+              <span class="edit-summary-value" data-role="summary-receiver"></span>
+            </div>
+            <div class="edit-summary-item">
+              <span class="edit-summary-label">Participants</span>
+              <span class="edit-summary-value" data-role="summary-participants"></span>
+            </div>
+          </div>
+        </div>
+        <div class="edit-fields">
+          <div class="field-stack edit-field">
+            <label class="field-label">Reference</label>
+            <select data-role="reference" aria-label="Reference">
+              <option value="" disabled selected>Select reference</option>
+            </select>
+          </div>
+          <div class="field-stack edit-field">
+            <label class="field-label">Amount</label>
+            <input data-role="amount" type="number" step="0.01" min="0" placeholder="Amount in rupees" aria-label="Amount in rupees" />
+          </div>
+          <div class="field-stack edit-field">
+            <label class="field-label">Date / Time</label>
+            <input data-role="date" type="datetime-local" aria-label="Date and time" />
+          </div>
+        </div>
+        <div class="edit-actions">
+          <button class="btn" type="button" data-role="cancel">Cancel</button>
+          <button class="btn btn-accent" type="submit">Save</button>
+        </div>
+      `;
+
+      const referenceInput = form.querySelector('[data-role="reference"]');
+      const amountInput = form.querySelector('[data-role="amount"]');
+      const summaryType = form.querySelector('[data-role="summary-type"]');
+      const summaryPayer = form.querySelector('[data-role="summary-payer"]');
+      const summaryReceiver = form.querySelector('[data-role="summary-receiver"]');
+      const summaryParticipants = form.querySelector('[data-role="summary-participants"]');
+      const dateInput = form.querySelector('[data-role="date"]');
+
+      // Populate reference dropdown
+      referenceInput.innerHTML = '';
+      const refPlaceholder = document.createElement('option');
+      refPlaceholder.value = '';
+      refPlaceholder.textContent = 'Select reference';
+      refPlaceholder.disabled = true;
+      refPlaceholder.selected = !(tx.desc);
+      referenceInput.appendChild(refPlaceholder);
+
+      // Always add current reference as option (preserves existing value)
+      if (tx.desc) {
+        const currentOption = document.createElement('option');
+        currentOption.value = tx.desc;
+        currentOption.textContent = tx.desc;
+        referenceInput.appendChild(currentOption);
+      }
+
+      if (currentType === 'transfer') {
+        // For transfers: Settlement option
+        const settlementOption = document.createElement('option');
+        settlementOption.value = 'settlement';
+        settlementOption.textContent = 'Settlement Transfer';
+        referenceInput.appendChild(settlementOption);
+      }
+
+      // Add other expense options
+      const expenseOptions = (state.currentTrip?.transactions || []).filter(t => (t.type || 'expense') === 'expense' && t.id !== tx.id);
+      for (const expense of expenseOptions) {
+        const option = document.createElement('option');
+        option.value = expense.id;
+        option.textContent = `${expense.desc} · ${rs(expense.amount)}`;
+        referenceInput.appendChild(option);
+      }
+
+      // Set current reference value
+      referenceInput.value = tx.desc || '';
+
+      amountInput.value = Number(tx.amount || 0) || '';
+      dateInput.value = toDateTimeLocalValue(tx.date);
+
+      summaryType.textContent = currentType === 'transfer' ? 'Person to person' : 'Expense';
+      summaryPayer.textContent = tx.payer || '-';
+      summaryReceiver.textContent = currentType === 'transfer' ? (tx.receiver || '-') : '-';
+      summaryParticipants.textContent = currentType === 'expense'
+        ? (currentParticipants.length ? currentParticipants.join(', ') : '-')
+        : (tx.receiver || '-');
+
+      form.querySelector('[data-role="cancel"]').onclick = () => {
+        state.editingTransactionId = null;
+        renderExpenses();
+      };
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        if (!state.editEnabled) { showToast('Enable edit mode to edit transactions', false); return; }
+        if (!verifyPIN()) return;
+        const amount = Number(amountInput.value);
+        const dateValue = dateInput.value;
+        const referenceValue = referenceInput.value.trim();
+        const isExpense = currentType === 'expense';
+
+        if (!referenceValue) return showToast('Reference is required', false);
+        if (!amount || amount <= 0) return showToast('Enter a valid amount', false);
+
+        const payload = {
+          type: currentType,
+          desc: referenceValue,
+          amount,
+          payer: currentPayer,
+          date: dateValue
+        };
+
+        if (isExpense) {
+          payload.category = tx.category;
+          payload.participants = currentParticipants;
+        } else {
+          payload.receiver = currentReceiver || tx.receiver;
+        }
+
+        try {
+          await api(`/api/trips/${state.currentTripId}/transactions/${tx.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+          });
+
+          state.editingTransactionId = null;
+          await loadCurrentTrip();
+          renderAll();
+          showToast('Transaction updated');
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      };
+
+      card.appendChild(form);
+    }
+
+    function renderExpenses() {
+      const list = document.getElementById('expensesList');
+      const totalEl = document.getElementById('expensesTotalText');
+      list.innerHTML = '';
+
+      if (!state.currentTrip) {
+        totalEl.textContent = 'Total: Rs 0.00 across 0 expenses';
+        list.innerHTML = '<div class="empty">Create or select a trip.</div>';
+        return;
+      }
+
+      const txs = [...(state.currentTrip.transactions || [])];
+      const expenseTotal = txs.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0);
+      const expenseCount = txs.filter(t => t.type === 'expense').length;
+      const transferCount = txs.filter(t => t.type === 'transfer').length;
+      if (totalEl) totalEl.innerHTML = '';
+
+      const orderedTxs = [...txs].sort((a, b) => {
+        const aTime = Date.parse(String(a.date || '').replace(' ', 'T')) || 0;
+        const bTime = Date.parse(String(b.date || '').replace(' ', 'T')) || 0;
+        if (aTime === bTime) return Number(b.id || 0) - Number(a.id || 0);
+        return bTime - aTime;
+      });
+
+      if (!txs.length) {
+        list.innerHTML = '<div class="empty">No transactions yet</div>';
+        return;
+      }
+
+      const viewToggle = document.getElementById('toggleLedgerViewBtn');
+      if (viewToggle) {
+        viewToggle.textContent = state.ledgerView === 'table' ? '▦ Table' : '▤ Cards';
+      }
+
+      if (state.ledgerView === 'cards') {
+        const grouped = {};
+        for (const tx of orderedTxs) {
+          const key = tx.date ? String(tx.date).split(/[T ]/)[0] : 'No Date';
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(tx);
+        }
+
+        for (const d of Object.keys(grouped).sort((a, b) => (a > b ? -1 : 1))) {
+          const divider = document.createElement('div');
+          divider.className = 'date-divider';
+          divider.textContent = dayLabel(d);
+          list.appendChild(divider);
+
+          for (const tx of grouped[d]) {
+            const txType = tx.type || (tx.receiver ? 'transfer' : 'expense');
+            const participants = parseBeneficiaries(tx.participants ?? tx.beneficiaries);
+            const split = participants.length ? Number(tx.amount) / participants.length : Number(tx.amount);
+            const cat = categoryConfig[tx.category] || categoryConfig.other;
+            const isSharedAcrossAllMembers = state.currentTrip?.members?.length && participants.length === state.currentTrip.members.length;
+            const isTransfer = txType === 'transfer';
+            const typeLabel = isTransfer ? 'Transfer' : 'Expense';
+            const categoryLabel = isTransfer ? 'Person to person' : `${cat.icon} ${getCategoryLabel(tx.category)}`;
+            const reference = tx.reference || tx.desc || '-';
+            const card = document.createElement('article');
+            card.className = 'expense-card';
+            card.dataset.txId = tx.id;
+            card.innerHTML = `
+              <div>
+                <div class="cat-icon" style="background:${isTransfer ? '#f3efe1' : `${cat.color}22`};border-color:${isTransfer ? '#e6dac1' : `${cat.color}66`};">${isTransfer ? '⇄' : cat.icon}</div>
+              </div>
+              <div>
+                <h4 class="expense-title">${tx.desc}</h4>
+                <div class="expense-meta">${dayLabel(tx.date)} · ${isTransfer ? `From ${tx.payer} to ${tx.receiver || '-'}` : `Paid by ${tx.payer}`}</div>
+                <div class="expense-cell-subtle" style="margin-top: 6px; margin-bottom: 6px;"><strong>Type:</strong> ${typeLabel}</div>
+                <div class="expense-cell-subtle" style="margin-bottom: 6px;"><strong>Reference:</strong> ${reference}</div>
+                ${isTransfer
+                  ? `<div class="participants"><span class="pill">Receiver: ${tx.receiver || '-'}</span></div>`
+                  : `<div class="participants">
+                      ${isSharedAcrossAllMembers
+                        ? '<span class="pill">Shared by all trip members</span>'
+                        : participants.map(n => `<span class="pill"><span class="avatar" style="width:18px;height:18px;font-size:0.56rem;background:${colorFromName(n)}">${initials(n)}</span>${n}</span>`).join('')}
+                    </div>
+                    <div class="per-head">${isSharedAcrossAllMembers ? 'Split equally across all members' : `${rs(split)} per person`}</div>`}
+              </div>
+              <div class="expense-actions edit-only">
+                <div class="amount-big">${rs(tx.amount)}</div>
+                <button class="edit-btn" data-id="${tx.id}">Edit</button>
+                <button class="delete-btn" data-id="${tx.id}">Delete</button>
+              </div>
+            `;
+
+            card.querySelector('.edit-btn').onclick = () => {
+              if (!state.editEnabled) { showToast('Enable edit mode to edit transactions', false); return; }
+              state.ledgerView = 'cards';
+              state.editingTransactionId = tx.id;
+              renderExpenses();
+              requestAnimationFrame(() => scrollToExpenseCard(tx.id));
+            };
+
+            card.querySelector('.delete-btn').onclick = async () => {
+              if (!state.editEnabled) { showToast('Enable edit mode to delete transactions', false); return; }
+              if (!confirm('Delete this transaction?')) return;
+              if (!verifyPIN()) return;
+              try {
+                await api(`/api/trips/${state.currentTripId}/transactions/${tx.id}`, { method: 'DELETE' });
+                await loadCurrentTrip();
+                renderAll();
+                showToast('Transaction deleted');
+              } catch (err) {
+                showToast(err.message, false);
+              }
+            };
+
+            if (state.editingTransactionId === tx.id) {
+              appendTransactionEditForm(card, tx);
+            }
+
+            list.appendChild(card);
+          }
+        }
+
+        return;
+      }
+
+      const tableWrap = document.createElement('div');
+      tableWrap.className = 'expenses-table-wrap';
+      const table = document.createElement('table');
+      table.className = 'expenses-table';
+      table.classList.toggle('edit-mode', state.editEnabled);
+
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Expense Title</th>
+            <th>Reference</th>
+            <th>Type</th>
+            <th>Paid By</th>
+            <th>Participants / Receiver</th>
+            <th>Amount</th>
+            <th class="edit-only">Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      `;
+
+      const tbody = table.querySelector('tbody');
+
+      for (const tx of orderedTxs) {
+        const txType = tx.type || (tx.receiver ? 'transfer' : 'expense');
+        const participants = parseBeneficiaries(tx.participants ?? tx.beneficiaries);
+        const split = participants.length ? Number(tx.amount) / participants.length : Number(tx.amount);
+        const cat = categoryConfig[tx.category] || categoryConfig.other;
+        const typeLabel = txType === 'transfer' ? 'Transfer' : 'Expense';
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+          <td>${dayLabel(tx.date)}</td>
+          <td>
+            <div class="expense-cell-title">${tx.desc}</div>
+            <div class="expense-cell-subtle">${txType === 'transfer' ? `To ${tx.receiver || '-'}` : `Split ${rs(split)} per person`}</div>
+          </td>
+          <td>
+            <div class="expense-cell-title">${tx.reference || tx.desc || '-'}</div>
+            <div class="expense-cell-subtle">${txType === 'transfer' ? 'Transfer reference' : 'Expense reference'}</div>
+          </td>
+          <td>
+            <div class="expense-cell-title">${typeLabel}</div>
+            <div class="expense-cell-subtle">${txType === 'transfer' ? 'Person to person' : `${cat.icon} ${getCategoryLabel(tx.category)}`}</div>
+          </td>
+          <td>${tx.payer}</td>
+          <td>
+            <div class="participant-tags">
+              ${txType === 'transfer'
+                ? `<span class="participant-tag"><span class="avatar" style="width:18px;height:18px;font-size:0.56rem;background:${colorFromName(tx.receiver || '-')}">${initials(tx.receiver || '')}</span>${tx.receiver || '-'}</span>`
+                : (participants.length
+                  ? participants.map(name => `<span class="participant-tag"><span class="avatar" style="width:18px;height:18px;font-size:0.56rem;background:${colorFromName(name)}">${initials(name)}</span>${name}</span>`).join('')
+                  : '<span class="expense-cell-subtle">-</span>')}
+            </div>
+          </td>
+          <td class="amount-big" style="text-align:left;">${rs(tx.amount)}</td>
+          <td class="edit-only">
+            <button class="expense-edit-link" type="button">Edit</button>
+            <button class="expense-delete-link" type="button">Delete</button>
+          </td>
+        `;
+
+        row.querySelector('.expense-edit-link').onclick = () => {
+          if (!state.editEnabled) { showToast('Enable edit mode to edit transactions', false); return; }
+          state.ledgerView = 'cards';
+          state.editingTransactionId = tx.id;
+          renderExpenses();
+          requestAnimationFrame(() => scrollToExpenseCard(tx.id));
+        };
+
+        row.querySelector('.expense-delete-link').onclick = async () => {
+          if (!state.editEnabled) { showToast('Enable edit mode to delete transactions', false); return; }
+          if (!confirm('Delete this transaction?')) return;
+          if (!verifyPIN()) return;
+          try {
+            await api(`/api/trips/${state.currentTripId}/transactions/${tx.id}`, { method: 'DELETE' });
+            await loadCurrentTrip();
+            renderAll();
+            showToast('Transaction deleted');
+          } catch (err) {
+            showToast(err.message, false);
+          }
+        };
+
+        tbody.appendChild(row);
+      }
+
+      tableWrap.appendChild(table);
+      list.appendChild(tableWrap);
+    }
+
+    function renderSettle() {
+      const txSettlementEl = document.getElementById('transactionSettlementList');
+      const balancesEl = document.getElementById('balanceCards');
+      const settleEl = document.getElementById('settlementList');
+      if (txSettlementEl) txSettlementEl.innerHTML = '';
+      balancesEl.innerHTML = '';
+      settleEl.innerHTML = '';
+
+      if (!state.currentTrip) {
+        balancesEl.innerHTML = '<div class="empty">No trip selected</div>';
+        settleEl.innerHTML = '<div class="empty">No settlements</div>';
+        return;
+      }
+
+      const members = state.currentTrip.members || [];
+      if (!members.length) {
+        if (txSettlementEl) txSettlementEl.innerHTML = '<div class="empty">Add members to see transaction settlement details</div>';
+        balancesEl.innerHTML = '<div class="empty">Add members to compute balances</div>';
+        settleEl.innerHTML = '<div class="empty">No settlements</div>';
+        return;
+      }
+
+      const txSummaries = state.settle.transaction_summaries || [];
+      if (txSettlementEl) {
+        if (!txSummaries.length) {
+          txSettlementEl.innerHTML = '<div class="empty">No transactions yet</div>';
+        } else {
+          for (const tx of txSummaries) {
+            const row = document.createElement('div');
+            row.className = 'settle-row';
+            if (tx.type === 'transfer') {
+              row.innerHTML = `
+                <div class="settle-flow">
+                  <span class="avatar" style="background:${colorFromName(tx.payer)}">${initials(tx.payer)}</span>
+                  <span>${tx.payer}</span>
+                  <span>→</span>
+                  <span class="avatar" style="background:${colorFromName(tx.receiver || tx.payer)}">${initials(tx.receiver || tx.payer)}</span>
+                  <span>${tx.receiver || '-'}</span>
+                </div>
+                <div class="member-balance ok">${rs(tx.amount)} settles balance</div>
+              `;
+            } else {
+              row.innerHTML = `
+                <div class="settle-flow">
+                  <span class="avatar" style="background:${colorFromName(tx.payer)}">${initials(tx.payer)}</span>
+                  <span>${tx.desc}</span>
+                </div>
+                <div class="member-balance">${tx.payer} paid ${rs(tx.amount)} · ${tx.share ? rs(tx.share) : rs(tx.amount)} each</div>
+              `;
+            }
+            txSettlementEl.appendChild(row);
+          }
+        }
+      }
+
+      for (const m of members) {
+        const bal = Number(state.settle.balances[m.name] || 0);
+        const row = document.createElement('div');
+        row.className = 'member-row';
+        row.innerHTML = `
+          <div class="member-left">
+            <span class="avatar" style="background:${colorFromName(m.name)}">${initials(m.name)}</span>
+            <span>${m.name}</span>
+          </div>
+          <div class="member-balance ${bal >= 0 ? 'ok' : 'bad'}">${bal >= 0 ? 'is owed ' : 'owes '}${rs(Math.abs(bal))}</div>
+        `;
+        balancesEl.appendChild(row);
+      }
+
+      const items = state.settle.settlements || [];
+      if (!items.length) {
+        settleEl.innerHTML = '<div class="empty">All settled up! &#127881;</div>';
+        return;
+      }
+
+      items.forEach((s, idx) => {
+        const key = `${s.from}|${s.to}|${s.amount}|${idx}`;
+        const done = state.doneSettlements.has(key);
+        const row = document.createElement('div');
+        row.className = `settle-row ${done ? 'done' : ''}`;
+        row.innerHTML = `
+          <div class="settle-flow">
+            <span class="avatar" style="background:${colorFromName(s.from)}">${initials(s.from)}</span>
+            <span class="settle-name">${s.from}</span>
+            <span class="settle-arrow">→</span>
+            <span class="avatar" style="background:${colorFromName(s.to)}">${initials(s.to)}</span>
+            <span class="settle-name">${s.to}</span>
+            <strong class="settle-amount">${rs(s.amount)}</strong>
+          </div>
+          <div class="settle-actions">
+            <button class="btn settle-single-btn edit-only">Settle</button>
+            <button class="btn settle-done-btn edit-only">${done ? 'Done' : 'Mark Done'}</button>
+          </div>
+        `;
+
+        // Settle (create a transfer transaction)
+        row.querySelector('.settle-single-btn').onclick = async () => {
+          if (!state.editEnabled) return showToast('Enable edit mode to apply settlements', false);
+          if (!confirm(`Create transfer ${s.from} → ${s.to} of ${rs(s.amount)}?`)) return;
+          try {
+            await api(`/api/trips/${state.currentTripId}/transactions`, {
+              method: 'POST',
+              body: JSON.stringify({
+                type: 'transfer',
+                desc: `Settlement ${s.from}→${s.to}`,
+                amount: Number(s.amount),
+                payer: s.from,
+                receiver: s.to,
+                date: new Date().toISOString(),
+                reference: 'settlement'
+              })
+            });
+            await loadCurrentTrip();
+            renderAll();
+            showToast('Settlement transaction created');
+          } catch (err) {
+            showToast(err.message, false);
+          }
+        };
+
+        row.querySelector('.settle-done-btn').onclick = () => {
+          if (!state.editEnabled) return showToast('Enable edit mode to mark settlements', false);
+          if (done) state.doneSettlements.delete(key);
+          else state.doneSettlements.add(key);
+          renderSettle();
+        };
+        settleEl.appendChild(row);
+      });
+      // Wire Apply All button
+      const applyAllBtn = document.getElementById('applyAllSettlementsBtn');
+      if (applyAllBtn) {
+        applyAllBtn.onclick = async () => {
+          if (!state.editEnabled) return showToast('Enable edit mode to apply settlements', false);
+          if (!confirm('Create transfer transactions for all suggested settlements?')) return;
+          try {
+            for (const s of items) {
+              await api(`/api/trips/${state.currentTripId}/transactions`, {
+                method: 'POST',
+                body: JSON.stringify({
+                  type: 'transfer',
+                  desc: `Settlement ${s.from}→${s.to}`,
+                  amount: Number(s.amount),
+                  payer: s.from,
+                  receiver: s.to,
+                  date: new Date().toISOString(),
+                  reference: 'settlement'
+                })
+              });
+            }
+            await loadCurrentTrip();
+            renderAll();
+            showToast('All settlement transactions created');
+          } catch (err) {
+            showToast(err.message, false);
+          }
+        };
+      }
+    }
+
+    function renderSummary() {
+      const catEl = document.getElementById('categoryBars');
+      const personEl = document.getElementById('personBars');
+      const statsEl = document.getElementById('statsGrid');
+      const summaryTableEl = document.getElementById('summaryExpensesTable');
+
+      catEl.innerHTML = '';
+      personEl.innerHTML = '';
+      statsEl.innerHTML = '';
+      if (summaryTableEl) summaryTableEl.innerHTML = '';
+
+      if (!state.currentTrip) {
+        catEl.innerHTML = '<div class="empty">No data</div>';
+        personEl.innerHTML = '<div class="empty">No data</div>';
+        statsEl.innerHTML = '<div class="empty">No data</div>';
+        if (summaryTableEl) summaryTableEl.innerHTML = '<div class="empty">No expenses yet</div>';
+        return;
+      }
+
+      const txs = (state.currentTrip.transactions || []).filter(t => t.type === 'expense');
+      const catTotals = {};
+      const personTotals = {};
+      let topItem = null;
+
+      for (const t of txs) {
+        const amount = Number(t.amount || 0);
+        const cat = t.category || 'other';
+        catTotals[cat] = (catTotals[cat] || 0) + amount;
+        personTotals[t.payer] = (personTotals[t.payer] || 0) + amount;
+        if (!topItem || amount > Number(topItem.amount || 0)) topItem = t;
+      }
+
+      renderBarSection(catEl, catTotals, true);
+      renderBarSection(personEl, personTotals, false);
+
+      const total = txs.reduce((s, t) => s + Number(t.amount || 0), 0);
+      const memberCount = Math.max((state.currentTrip.members || []).length, 1);
+      const largestPayer = Object.entries(personTotals).sort((a, b) => b[1] - a[1])[0];
+      const dates = txs.map(x => x.date).filter(Boolean).sort();
+      const range = dates.length ? `${dayLabel(dates[0])} — ${dayLabel(dates[dates.length - 1])}` : '-';
+
+      // Additional stats
+      const numExpenses = txs.length;
+      const avgExpense = numExpenses ? (total / numExpenses) : 0;
+      const expenseAmounts = txs.map(t => Number(t.amount || 0)).sort((a, b) => a - b);
+      let median = 0;
+      if (expenseAmounts.length) {
+        const mid = Math.floor(expenseAmounts.length / 2);
+        if (expenseAmounts.length % 2 === 1) median = expenseAmounts[mid];
+        else median = (expenseAmounts[mid - 1] + expenseAmounts[mid]) / 2;
+      }
+      const smallestExpense = expenseAmounts.length ? expenseAmounts[0] : 0;
+      const transfers = (state.currentTrip.transactions || []).filter(t => t.type === 'transfer');
+      const numTransfers = transfers.length;
+      const totalTransfers = transfers.reduce((s, t) => s + Number(t.amount || 0), 0);
+
+      const stats = [
+        ['Total Trip Cost', rs(total)],
+        ['Number of Expenses', String(numExpenses)],
+        ['Cost Per Person', rs(total / memberCount)],
+        ['Most Expensive Item', topItem ? `${topItem.desc} (${rs(topItem.amount)})` : '-'],
+        ['Largest Payer', largestPayer ? `${largestPayer[0]} (${rs(largestPayer[1])})` : '-'],
+        ['Date Range', range],
+        ['Number of Transfers', String(numTransfers)],
+        ['Total Transfers', rs(totalTransfers)]
+      ];
+
+      for (const [k, v] of stats) {
+        const div = document.createElement('div');
+        div.className = 'metric';
+        div.innerHTML = `${k}<strong>${v}</strong>`;
+        statsEl.appendChild(div);
+      }
+
+      if (!summaryTableEl) return;
+
+      const orderedExpenses = [...txs].sort((a, b) => {
+        const aTime = Date.parse(String(a.date || '').replace(' ', 'T')) || 0;
+        const bTime = Date.parse(String(b.date || '').replace(' ', 'T')) || 0;
+        if (aTime === bTime) return Number(b.id || 0) - Number(a.id || 0);
+        return bTime - aTime;
+      });
+
+      if (!orderedExpenses.length) {
+        summaryTableEl.innerHTML = '<div class="empty">No expenses yet</div>';
+        return;
+      }
+
+      const tableWrap = document.createElement('div');
+      tableWrap.className = 'expenses-table-wrap';
+      const table = document.createElement('table');
+      table.className = 'expenses-table';
+
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Expense Title</th>
+            <th>Type</th>
+            <th>Paid By</th>
+            <th>Participants</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      `;
+
+      const tbody = table.querySelector('tbody');
+      for (const tx of orderedExpenses) {
+        const participants = parseBeneficiaries(tx.participants ?? tx.beneficiaries);
+        const split = participants.length ? Number(tx.amount) / participants.length : Number(tx.amount);
+        const cat = categoryConfig[tx.category] || categoryConfig.other;
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+          <td>${dayLabel(tx.date)}</td>
+          <td>
+            <div class="expense-cell-title">${tx.desc || '-'}</div>
+            <div class="expense-cell-subtle">Split ${rs(split)} per person</div>
+          </td>
+          <td>
+            <div class="expense-cell-title">Expense</div>
+            <div class="expense-cell-subtle">${cat.icon} ${getCategoryLabel(tx.category)}</div>
+          </td>
+          <td>${tx.payer || '-'}</td>
+          <td>
+            <div class="participant-tags">
+              ${participants.length
+                ? participants.map(name => `<span class="participant-tag"><span class="avatar" style="width:18px;height:18px;font-size:0.56rem;background:${colorFromName(name)}">${initials(name)}</span>${name}</span>`).join('')
+                : '<span class="expense-cell-subtle">-</span>'}
+            </div>
+          </td>
+          <td class="amount-big" style="text-align:left;">${rs(tx.amount)}</td>
+        `;
+
+        tbody.appendChild(row);
+      }
+
+      tableWrap.appendChild(table);
+      summaryTableEl.appendChild(tableWrap);
+    }
+
+    function renderBarSection(parent, totals, categoryMode) {
+      const entries = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+      const total = entries.reduce((s, [, v]) => s + v, 0) || 1;
+
+      if (!entries.length) {
+        parent.innerHTML = '<div class="empty">No expenses yet</div>';
+        return;
+      }
+
+      for (const [key, amount] of entries) {
+        const pct = (amount / total) * 100;
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+
+        const leftLabel = categoryMode
+          ? `${(categoryConfig[key] || categoryConfig.other).icon} ${key[0].toUpperCase() + key.slice(1)}`
+          : key;
+
+        row.innerHTML = `
+          <div>${leftLabel}</div>
+          <div class="bar-track"><div class="bar" style="width:${pct.toFixed(2)}%"></div></div>
+          <div class="mono">${rs(amount)} (${pct.toFixed(1)}%)</div>
+        `;
+
+        parent.appendChild(row);
+      }
+    }
+
+    function renderTabs() {
+      for (const tab of document.querySelectorAll('.tab')) {
+        tab.classList.toggle('active', tab.dataset.tab === state.activeTab);
+      }
+
+      document.getElementById('panel-itinerary').classList.toggle('active', state.activeTab === 'itinerary');
+      document.getElementById('panel-expenses').classList.toggle('active', state.activeTab === 'expenses');
+      document.getElementById('panel-settle').classList.toggle('active', state.activeTab === 'settle');
+      document.getElementById('panel-summary').classList.toggle('active', state.activeTab === 'summary');
+    }
+
+    function bindEvents() {
+      for (const tab of document.querySelectorAll('.tab')) {
+        tab.onclick = () => {
+          state.activeTab = tab.dataset.tab;
+          renderTabs();
+        };
+      }
+
+      const editModeBtn = document.getElementById('editModeBtn');
+      if (editModeBtn) {
+        editModeBtn.onclick = () => {
+          if (!state.editEnabled) {
+            if (!verifyEditPIN()) return;
+            state.editEnabled = true;
+            editModeBtn.textContent = 'Edit: ON';
+            editModeBtn.classList.add('active');
+            document.body.classList.add('edit-mode');
+            showToast('Edit mode enabled');
+          } else {
+            state.editEnabled = false;
+            editModeBtn.textContent = 'Edit';
+            editModeBtn.classList.remove('active');
+            document.body.classList.remove('edit-mode');
+            showToast('Edit mode disabled');
+          }
+          // re-render to apply edit-only visibility everywhere
+          renderAll();
+        };
+      }
+
+      document.getElementById('tripSwitcherBtn').onclick = (e) => {
+        e.stopPropagation();
+        document.getElementById('tripMenu').classList.toggle('open');
+      };
+
+      const tripDetailMenuBtn = document.getElementById('tripDetailMenuBtn');
+      if (tripDetailMenuBtn) {
+        tripDetailMenuBtn.onclick = (e) => {
+          e.stopPropagation();
+          document.getElementById('tripDetailMenu').classList.toggle('open');
+        };
+      }
+
+      document.addEventListener('click', (e) => {
+        const menu = document.getElementById('tripMenu');
+        const btn = document.getElementById('tripSwitcherBtn');
+        if (!menu.contains(e.target) && !btn.contains(e.target)) menu.classList.remove('open');
+
+        const detailMenu = document.getElementById('tripDetailMenu');
+        const detailBtn = document.getElementById('tripDetailMenuBtn');
+        if (detailMenu && detailBtn && !detailMenu.contains(e.target) && !detailBtn.contains(e.target)) {
+          detailMenu.classList.remove('open');
+        }
+
+        const membersMenu = document.getElementById('membersMenu');
+        const membersMenuBtn = document.getElementById('membersMenuBtn');
+        if (membersMenu && membersMenuBtn && !membersMenu.contains(e.target) && !membersMenuBtn.contains(e.target)) {
+          membersMenu.classList.remove('open');
+        }
+      });
+
+      // Members menu
+      const membersMenuBtn = document.getElementById('membersMenuBtn');
+      if (membersMenuBtn) {
+        membersMenuBtn.onclick = (e) => {
+          e.stopPropagation();
+          document.getElementById('membersMenu').classList.toggle('open');
+        };
+      }
+
+      const deleteMemberBtn = document.getElementById('deleteMemberBtn');
+      if (deleteMemberBtn) {
+        deleteMemberBtn.onclick = async () => {
+          if (!state.editEnabled) {
+            showToast('Enable edit mode to delete members', false);
+            return;
+          }
+          if (!state.selectedMemberName) {
+            showToast('Select a member first', false);
+            return;
+          }
+
+          const selectedMember = (state.currentTrip?.members || []).find(m => m.name === state.selectedMemberName);
+          if (!selectedMember) {
+            showToast('Member not found', false);
+            return;
+          }
+
+          const balance = Number(state.settle.balances[state.selectedMemberName] || 0);
+          if (balance !== 0) {
+            showToast(`Cannot delete member with non-zero balance (${rs(balance)})`, false);
+            return;
+          }
+
+          if (!confirm(`Delete member ${state.selectedMemberName}?`)) return;
+
+          try {
+            await api(`/api/trips/${state.currentTripId}/members/${encodeURIComponent(state.selectedMemberName)}`, { method: 'DELETE' });
+            state.selectedMemberName = null;
+            await loadCurrentTrip();
+            renderAll();
+            showToast('Member deleted');
+          } catch (err) {
+            showToast(err.message, false);
+          }
+        };
+      }
+
+
+      // category select handling
+      document.getElementById('categoryCustomInput').addEventListener('input', () => {
+        // no-op here; custom input is read when submitting
+      });
+
+      const newTripBtn = document.getElementById('newTripBtn');
+      if (newTripBtn) {
+        newTripBtn.onclick = () => {
+          if (!state.editEnabled) return showToast('Enable edit mode to create a new trip', false);
+          document.getElementById('newTripModal').classList.add('open');
+        };
+      }
+
+      document.getElementById('cancelNewTrip').onclick = () => {
+        document.getElementById('newTripModal').classList.remove('open');
+      };
+
+      document.getElementById('saveNewTrip').onclick = async () => {
+        if (!state.editEnabled) return showToast('Enable edit mode to create a new trip', false);
+        const name = document.getElementById('newTripName').value.trim();
+        const destination = document.getElementById('newTripDestination').value.trim();
+        if (!name) return showToast('Trip name is required', false);
+
+        try {
+          await api('/api/trips', {
+            method: 'POST',
+            body: JSON.stringify({ name, destination })
+          });
+          document.getElementById('newTripName').value = '';
+          document.getElementById('newTripDestination').value = '';
+          document.getElementById('newTripModal').classList.remove('open');
+          await loadTrips();
+          renderAll();
+          showToast('Trip created');
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      };
+
+      const tripNameEl = document.getElementById('tripNameDisplay');
+      if (tripNameEl) {
+        tripNameEl.onclick = async () => {
+          if (!state.editEnabled) return showToast('Enable edit mode to rename trip', false);
+          if (!state.currentTrip) return;
+          const old = state.currentTrip.trip.name;
+          const next = prompt('Update trip name', old);
+          if (next === null) return;
+          if (!next.trim()) return showToast('Trip name cannot be empty', false);
+
+          try {
+            await api(`/api/trips/${state.currentTripId}`, {
+              method: 'PUT',
+              body: JSON.stringify({ name: next.trim() })
+            });
+            await loadTrips();
+            renderAll();
+            showToast('Trip updated');
+          } catch (err) {
+            showToast(err.message, false);
+          }
+        };
+      }
+
+      document.getElementById('editDestinationBtn').onclick = async () => {
+        if (!state.editEnabled) return showToast('Enable edit mode to edit destination', false);
+        if (!state.currentTrip) return;
+        const old = state.currentTrip.trip.destination || '';
+        const next = prompt('Update destination', old);
+        if (next === null) return;
+
+        try {
+          await api(`/api/trips/${state.currentTripId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ destination: next.trim() })
+          });
+          await loadTrips();
+          renderAll();
+          showToast('Destination updated');
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      };
+
+      document.getElementById('deleteTripBtn').onclick = async () => {
+        if (!state.currentTrip) return;
+        if (!confirm(`Delete trip ${state.currentTrip.trip.name}? This removes members and transactions.`)) return;
+        if (!state.editEnabled) { showToast('Enable edit mode to delete trip', false); return; }
+        if (!verifyPIN()) return;
+        try {
+          await api(`/api/trips/${state.currentTripId}`, { method: 'DELETE' });
+          await loadTrips();
+          renderAll();
+          showToast('Trip deleted');
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      };
+
+      document.getElementById('addMemberBtn').onclick = async () => {
+        if (!state.editEnabled) return showToast('Enable edit mode to add members', false);
+        if (!state.currentTripId) return showToast('Create a trip first', false);
+        const input = document.getElementById('memberInput');
+        const name = input.value.trim();
+        if (!name) return;
+
+        try {
+          await api(`/api/trips/${state.currentTripId}/members`, {
+            method: 'POST',
+            body: JSON.stringify({ name })
+          });
+          input.value = '';
+          await loadCurrentTrip();
+          renderAll();
+          showToast('Member added');
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      };
+
+      document.getElementById('memberInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('addMemberBtn').click();
+        }
+      });
+
+      // Itinerary form toggle
+      const toggleItBtn = document.getElementById('toggleItineraryFormBtn');
+      if (toggleItBtn) {
+        toggleItBtn.onclick = () => {
+          if (!state.editEnabled) {
+            showToast('Enable edit mode to add itinerary events', false);
+            return;
+          }
+          state.itineraryEditingId = null;
+          state.itinerarySelectedParticipants = new Set();
+          state.itineraryFormOpen = !state.itineraryFormOpen;
+          const wrap = document.getElementById('itineraryFormWrap');
+          if (wrap) {
+            wrap.classList.toggle('open', state.itineraryFormOpen);
+            if (state.itineraryFormOpen) {
+              renderItineraryForm();
+              document.getElementById('itTitle').value = '';
+              document.getElementById('itType').value = 'travel';
+              document.getElementById('itTypeCustom').value = '';
+              document.getElementById('itDate').value = '';
+              document.getElementById('itEndDate').value = '';
+              document.getElementById('itPlace').value = '';
+              document.getElementById('itEndPlace').value = '';
+            }
+          }
+        };
+      }
+
+      // Itinerary form submission
+      const itForm = document.getElementById('itineraryForm');
+      if (itForm) {
+        itForm.onsubmit = async (e) => {
+          e.preventDefault();
+          if (!state.editEnabled) return showToast('Enable edit mode to add itinerary events', false);
+          if (!state.currentTripId) return showToast('Select or create a trip first', false);
+          const title = document.getElementById('itTitle').value.trim();
+          const typeSel = document.getElementById('itType').value;
+          const customType = document.getElementById('itTypeCustom').value.trim();
+          const datetime = document.getElementById('itDate').value;
+          const endDatetime = document.getElementById('itEndDate').value;
+          const place = document.getElementById('itPlace').value.trim();
+          const endPlace = document.getElementById('itEndPlace').value.trim();
+          const participants = [...state.itinerarySelectedParticipants];
+          if (!title) return showToast('Title is required', false);
+          const it = {
+            id: state.itineraryEditingId || String(Date.now()),
+            title,
+            type: typeSel === 'other' ? (customType || 'other') : typeSel,
+            datetime,
+            endDatetime: endDatetime || null,
+            place,
+            endPlace: endPlace || null,
+            participants,
+            notes: ''
+          };
+          if (!state.itinerary) state.itinerary = [];
+          // edit or add
+          const idx = state.itinerary.findIndex(x => x.id === it.id);
+          if (idx >= 0) state.itinerary[idx] = it;
+          else state.itinerary.push(it);
+          await saveItineraryForTrip(state.currentTripId);
+          renderItinerary();
+          showToast(state.itineraryEditingId ? 'Itinerary event updated' : 'Itinerary event added');
+          state.itineraryFormOpen = false;
+          document.getElementById('itineraryFormWrap').classList.remove('open');
+          state.itinerarySelectedParticipants = new Set();
+        };
+      }
+
+      // delegate delete/edit buttons (re-render safe)
+      document.body.addEventListener('click', async (e) => {
+        const del = e.target.closest('.delete-it');
+        if (del) {
+          if (!state.editEnabled) return showToast('Enable edit mode to delete itinerary items', false);
+          const id = del.dataset.id;
+          if (!id) return;
+          if (!confirm('Delete this itinerary event?')) return;
+          if (!verifyPIN()) return;
+          state.itinerary = (state.itinerary || []).filter(x => x.id !== id);
+          await saveItineraryForTrip(state.currentTripId);
+          renderItinerary();
+          return;
+        }
+        const ed = e.target.closest('.edit-it');
+        if (ed) {
+          if (!state.editEnabled) return showToast('Enable edit mode to edit itinerary items', false);
+          const id = ed.dataset.id;
+          const item = (state.itinerary || []).find(x => x.id === id);
+          if (!item) return;
+          state.itineraryEditingId = id;
+          state.itineraryFormOpen = true;
+          state.itinerarySelectedParticipants = new Set(item.participants || []);
+          document.getElementById('itineraryFormWrap').classList.add('open');
+          document.getElementById('itTitle').value = item.title || '';
+          document.getElementById('itType').value = ['travel','stay','explore','other'].includes(item.type) ? item.type : 'other';
+          document.getElementById('itTypeCustom').value = ['travel','stay','explore','other'].includes(item.type) ? '' : item.type;
+          document.getElementById('itDate').value = toDateTimeLocalValue(item.datetime || item.date || '');
+          document.getElementById('itEndDate').value = toDateTimeLocalValue(item.endDatetime || '');
+          document.getElementById('itPlace').value = item.place || '';
+          document.getElementById('itEndPlace').value = item.endPlace || '';
+          renderItineraryForm();
+        }
+      });
+
+      document.getElementById('toggleFormBtn').onclick = () => {
+        if (!state.editEnabled) return showToast('Enable edit mode to add transactions', false);
+        state.formOpen = !state.formOpen;
+        const wrap = document.getElementById('expenseFormWrap');
+        wrap.classList.toggle('open', state.formOpen);
+      };
+
+      const viewToggle = document.getElementById('toggleLedgerViewBtn');
+      if (viewToggle) {
+        viewToggle.onclick = () => {
+          state.ledgerView = state.ledgerView === 'table' ? 'cards' : 'table';
+          renderExpenses();
+        };
+      }
+
+      const addItineraryCard = document.getElementById('addItineraryCard');
+      if (addItineraryCard) {
+        addItineraryCard.addEventListener('click', (e) => {
+          if (e.target.closest('input, select, textarea, button, label, option')) return;
+          if (state.itineraryFormOpen) return;
+          state.itineraryFormOpen = true;
+          state.itineraryEditingId = null;
+          state.itinerarySelectedParticipants = new Set();
+          const wrap = document.getElementById('itineraryFormWrap');
+          if (wrap) {
+            wrap.classList.add('open');
+            renderItineraryForm();
+            document.getElementById('itTitle').value = '';
+            document.getElementById('itType').value = 'travel';
+            document.getElementById('itTypeCustom').value = '';
+            document.getElementById('itDate').value = '';
+            document.getElementById('itEndDate').value = '';
+            document.getElementById('itPlace').value = '';
+            document.getElementById('itEndPlace').value = '';
+          }
+        });
+      }
+
+      const addCard = document.getElementById('addTransactionCard');
+      if (addCard) {
+        addCard.addEventListener('click', (e) => {
+          if (e.target.closest('input, select, textarea, button, label, option')) return;
+          if (state.formOpen) return;
+          state.formOpen = true;
+          const wrap = document.getElementById('expenseFormWrap');
+          wrap.classList.toggle('open', state.formOpen);
+        });
+      }
+
+      const dateInput = document.getElementById('dateInput');
+      dateInput.value = '';
+
+      renderCategorySelect();
+
+      document.getElementById('expenseForm').onsubmit = async (e) => {
+        e.preventDefault();
+        if (!state.editEnabled) return showToast('Enable edit mode to add transactions', false);
+        if (!state.currentTripId) return showToast('Create a trip first', false);
+        const desc = document.getElementById('descInput').value.trim();
+        const amount = Number(document.getElementById('amountInput').value);
+        const dateValue = document.getElementById('dateInput').value;
+        const txType = document.getElementById('expenseToggle')?.checked ? 'expense' : 'transfer';
+
+        if (txType === 'expense' && !desc) return showToast('Expense title is required', false);
+        if (!amount || amount <= 0) return showToast('Enter a valid amount', false);
+
+        const payload = {
+          type: txType,
+          desc,
+          amount,
+          date: dateValue || ''
+        };
+
+        if (txType === 'expense') {
+          const payer = document.getElementById('payerInput').value;
+          if (!payer) return showToast('Select who paid', false);
+          if (!state.selectedParticipants.size) return showToast('Select at least one participant', false);
+
+          const categorySel = document.getElementById('categoryInput');
+          const categoryValue = categorySel && categorySel.value === 'custom'
+            ? document.getElementById('categoryCustomInput').value.trim()
+            : (categorySel ? categorySel.value : (state.selectedCategory || 'other'));
+
+          if (!categoryValue) return showToast('Enter a custom category', false);
+
+          payload.desc = desc;
+          payload.payer = payer;
+          payload.category = categoryValue;
+          payload.participants = [...state.selectedParticipants];
+        } else {
+          const payer = document.getElementById('payerInput').value;
+          const receiver = document.getElementById('receiverInput').value;
+          const expenseRef = document.getElementById('expenseReferenceInput')?.value;
+          const settlementNote = document.getElementById('settlementNoteInput')?.value.trim();
+          if (!payer) return showToast('Select who paid', false);
+          if (!receiver) return showToast('Select receiver', false);
+
+          payload.payer = payer;
+          payload.receiver = receiver;
+
+          if (expenseRef === 'settlement') {
+            payload.reference = settlementNote
+              ? `Settlement Transfer - ${settlementNote}`
+              : 'Settlement Transfer';
+          } else if (expenseRef) {
+            // expenseRef is an id of an existing expense; map it to that expense's description
+            const refTx = (state.currentTrip?.transactions || []).find(t => String(t.id) === String(expenseRef));
+            payload.reference = refTx ? refTx.desc : '';
+          } else {
+            payload.reference = '';
+          }
+        }
+
+        try {
+          await api(`/api/trips/${state.currentTripId}/transactions`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+
+          document.getElementById('descInput').value = '';
+          document.getElementById('amountInput').value = '';
+          document.getElementById('dateInput').value = '';
+
+          const payerReset = document.getElementById('payerInput');
+          const receiverReset = document.getElementById('receiverInput');
+          if (payerReset) payerReset.value = '';
+          if (receiverReset) receiverReset.value = '';
+
+          const expenseToggle = document.getElementById('expenseToggle');
+          if (expenseToggle) expenseToggle.checked = false;
+
+          const expenseRef = document.getElementById('expenseReferenceInput');
+          if (expenseRef) expenseRef.value = '';
+          const settlementNote = document.getElementById('settlementNoteInput');
+          if (settlementNote) settlementNote.value = '';
+
+          state.selectedParticipants = new Set();
+          state.selectedCategory = 'other';
+          document.getElementById('categoryCustomInput').value = '';
+          const categorySelAfter = document.getElementById('categoryInput');
+          if (categorySelAfter) {
+            categorySelAfter.value = 'other';
+          }
+          renderCategorySelect();
+          renderExpenseFormOptions();
+
+          await loadCurrentTrip();
+          renderAll();
+          showToast('Transaction added');
+        } catch (err) {
+          showToast(err.message, false);
+        }
+      };
+
+    }
+
+    init().catch(err => {
+      showToast(err.message || 'Failed to initialize', false);
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
