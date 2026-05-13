@@ -25,46 +25,29 @@ Deploy directly on your Android phone using Termux.
 - ~500MB free storage
 - Internet connection
 
-#### Quick Setup (Copy-Paste in Termux)
+#### Quick Setup (Simple Copy-Paste)
 
-Copy and paste everything below in Termux. It prepares Termux, installs dependencies, clones/updates the repo, installs requirements, and runs the app:
+Copy and paste these commands in Termux:
 
 ```bash
-cat > /tmp/tripapp-termux-setup.sh << 'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-set -e
-
-echo "[1/5] Updating Termux packages..."
-pkg update -y && pkg upgrade -y
-
-echo "[2/5] Installing required tools..."
+pkg update -y
+pkg upgrade -y
 pkg install -y python git
-
-echo "[3/5] Cloning or updating repository..."
-cd "$HOME"
-if [ -d "Trip-Finances-Management-System/.git" ]; then
-    cd Trip-Finances-Management-System
-    git pull origin main
-else
-    rm -rf Trip-Finances-Management-System
-    git clone https://github.com/sriramvarma0/Trip-Finances-Management-System.git
-    cd Trip-Finances-Management-System
-fi
-
-echo "[4/5] Installing Python dependencies..."
+cd $HOME
+git clone https://github.com/sriramvarma0/Trip-Finances-Management-System.git
+cd Trip-Finances-Management-System
 python -m pip install --upgrade pip
-if [ -f requirements.txt ]; then
-    python -m pip install -r requirements.txt
-else
-    python -m pip install flask flask-cors
-fi
-
-echo "[5/5] Starting app..."
-echo "App URL: http://127.0.0.1:8000"
+python -m pip install -r requirements.txt
 python app.py
-EOF
+```
 
-chmod +x /tmp/tripapp-termux-setup.sh && /tmp/tripapp-termux-setup.sh
+If the repo is already cloned, use this instead:
+
+```bash
+cd $HOME/Trip-Finances-Management-System
+git pull origin main
+python -m pip install -r requirements.txt
+python app.py
 ```
 
 **Access the app:**
